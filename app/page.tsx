@@ -437,6 +437,185 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── QUALITY GUARANTEE ──────────────────────────────────────────── */}
+      <section style={{ padding: '7rem 2.5rem', position: 'relative', zIndex: 10, overflow: 'hidden' }}>
+        {/* Background glow */}
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '900px', height: '500px', background: 'radial-gradient(ellipse, rgba(0,229,200,0.04) 0%, rgba(168,85,247,0.02) 50%, transparent 70%)', pointerEvents: 'none' }} />
+
+        <div style={{ maxWidth: '1100px', margin: '0 auto', position: 'relative' }}>
+
+          {/* Header */}
+          <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', marginBottom: '1.5rem', border: '1px solid rgba(0,229,200,0.2)', background: 'rgba(0,229,200,0.04)', borderRadius: '100px' }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#00e5c8" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.2em', color: '#00e5c8' }}>QUALITY GUARANTEE</span>
+            </div>
+            <h2 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: 'clamp(2.4rem, 5vw, 4rem)', color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.0, marginBottom: '1.5rem' }}>
+              Every account.<br />
+              <span style={{ background: 'linear-gradient(135deg, #00b8d9 0%, #00e5c8 50%, #00f5d4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', filter: 'drop-shadow(0 0 30px rgba(0,229,200,0.5))' }}>
+                Bulletproof.
+              </span>
+            </h2>
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.1rem', color: 'rgba(224,224,224,0.4)', maxWidth: '520px', margin: '0 auto', lineHeight: 1.75 }}>
+              Built over 6+ months. Refined through thousands of test accounts. Backed by 4 years of industry experience. This isn&apos;t a script — it&apos;s a system.
+            </p>
+          </div>
+
+          {/* Stats strip */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', background: 'rgba(0,229,200,0.07)', borderRadius: '14px', overflow: 'hidden', marginBottom: '1.5rem', border: '1px solid rgba(0,229,200,0.07)' }}>
+            {[
+              { value: '6+',    unit: 'months',   label: 'In active development', color: '#00e5c8' },
+              { value: '4',     unit: 'years',    label: 'Industry experience',   color: '#00e5c8' },
+              { value: '100%',  unit: '',         label: 'Pay-per-success only',  color: '#00e5c8' },
+              { value: 'A–Z',   unit: '',         label: 'Real user simulation',  color: '#00e5c8' },
+            ].map(s => (
+              <div key={s.value} style={{ background: '#000', padding: '2rem 1.5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(0,229,200,0.3), transparent)' }} />
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '4px', marginBottom: '0.4rem' }}>
+                  <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '2.75rem', letterSpacing: '-0.04em', lineHeight: 1, background: 'linear-gradient(135deg, #00b8d9, #00e5c8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{s.value}</span>
+                  {s.unit && <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '11px', color: 'rgba(0,229,200,0.5)', letterSpacing: '0.08em' }}>{s.unit}</span>}
+                </div>
+                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '9px', letterSpacing: '0.15em', color: 'rgba(224,224,224,0.3)', textTransform: 'uppercase' }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Main bento grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gridTemplateRows: 'auto auto', gap: '1.25rem' }}>
+
+            {/* CARD 1 — Trust Score (large, span 2) */}
+            <div style={{ gridColumn: 'span 2', borderRadius: '18px', border: '1px solid rgba(0,229,200,0.2)', background: '#000', overflow: 'hidden', position: 'relative', transition: 'border-color 0.3s, box-shadow 0.3s' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,200,0.4)'; e.currentTarget.style.boxShadow = '0 0 50px rgba(0,229,200,0.07)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,229,200,0.2)'; e.currentTarget.style.boxShadow = 'none' }}
+            >
+              <div style={{ height: '2px', background: 'linear-gradient(90deg, #00b8d9, #00e5c8, #00f5d4)' }} />
+              <div style={{ padding: '2.25rem 2.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '1.5rem' }}>
+                  <div>
+                    <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '9px', letterSpacing: '0.2em', color: 'rgba(0,229,200,0.5)', textTransform: 'uppercase', marginBottom: '0.6rem' }}>Trust Score</div>
+                    <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '1.4rem', color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                      Highest trust score.<br />Every single account.
+                    </div>
+                  </div>
+                  {/* Score visual */}
+                  <div style={{ flexShrink: 0, width: 72, height: 72, borderRadius: '50%', border: '2px solid rgba(0,229,200,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', boxShadow: '0 0 30px rgba(0,229,200,0.15)' }}>
+                    <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'conic-gradient(#00e5c8 0deg 324deg, rgba(0,229,200,0.08) 324deg 360deg)' }} />
+                    <div style={{ position: 'absolute', inset: '4px', borderRadius: '50%', background: '#000' }} />
+                    <span style={{ position: 'relative', fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '16px', background: 'linear-gradient(135deg, #00b8d9, #00e5c8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>90%</span>
+                  </div>
+                </div>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.88rem', color: 'rgba(224,224,224,0.45)', lineHeight: 1.75, marginBottom: '1.5rem', maxWidth: '520px' }}>
+                  The automation mimics genuine human behaviour at every step — from how photos are selected, to timing between taps, to question responses. Bumble&apos;s trust algorithms see a real person, not a bot.
+                </p>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  {['Native interaction patterns', 'Real device fingerprint', 'Human-timed sequences', 'Organic profile build'].map(t => (
+                    <div key={t} style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '9px', letterSpacing: '0.1em', color: 'rgba(0,229,200,0.6)', border: '1px solid rgba(0,229,200,0.15)', background: 'rgba(0,229,200,0.04)', padding: '5px 12px', borderRadius: '4px' }}>
+                      {t}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* CARD 2 — Pay Per Success */}
+            <div style={{ borderRadius: '18px', border: '1px solid rgba(168,85,247,0.2)', background: '#000', overflow: 'hidden', position: 'relative', transition: 'border-color 0.3s, box-shadow 0.3s' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(168,85,247,0.4)'; e.currentTarget.style.boxShadow = '0 0 40px rgba(168,85,247,0.08)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(168,85,247,0.2)'; e.currentTarget.style.boxShadow = 'none' }}
+            >
+              <div style={{ height: '2px', background: 'linear-gradient(90deg, rgba(168,85,247,0.8), rgba(0,229,200,0.5))' }} />
+              <div style={{ padding: '2rem' }}>
+                <div style={{ width: 44, height: 44, borderRadius: '10px', border: '1px solid rgba(168,85,247,0.25)', background: 'rgba(168,85,247,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(168,85,247,0.9)" strokeWidth="1.75"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '9px', letterSpacing: '0.18em', color: 'rgba(168,85,247,0.6)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Zero Risk</div>
+                <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1rem', color: '#fff', letterSpacing: '-0.01em', marginBottom: '0.75rem', lineHeight: 1.3 }}>Credits deducted only on confirmed live accounts</div>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'rgba(224,224,224,0.4)', lineHeight: 1.7 }}>
+                  Stage 6 AI vision confirms the account is active before a single credit is touched. Failed runs cost you nothing.
+                </p>
+              </div>
+            </div>
+
+            {/* CARD 3 — Photo Pipeline */}
+            <div style={{ borderRadius: '18px', border: '1px solid rgba(0,212,255,0.18)', background: '#000', overflow: 'hidden', position: 'relative', transition: 'border-color 0.3s, box-shadow 0.3s' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,212,255,0.35)'; e.currentTarget.style.boxShadow = '0 0 40px rgba(0,212,255,0.07)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,212,255,0.18)'; e.currentTarget.style.boxShadow = 'none' }}
+            >
+              <div style={{ height: '2px', background: 'linear-gradient(90deg, rgba(0,212,255,0.8), rgba(0,229,200,0.5))' }} />
+              <div style={{ padding: '2rem' }}>
+                <div style={{ width: 44, height: 44, borderRadius: '10px', border: '1px solid rgba(0,212,255,0.2)', background: 'rgba(0,212,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(0,212,255,0.9)" strokeWidth="1.75"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                </div>
+                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '9px', letterSpacing: '0.18em', color: 'rgba(0,212,255,0.6)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Custom Built</div>
+                <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1rem', color: '#fff', letterSpacing: '-0.01em', marginBottom: '0.75rem', lineHeight: 1.3 }}>Proprietary photo pipeline</div>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'rgba(224,224,224,0.4)', lineHeight: 1.7 }}>
+                  Custom-built tools process every photo before upload — uniqueness, quality, and platform compliance all handled automatically.
+                </p>
+              </div>
+            </div>
+
+            {/* CARD 4 — Battle Tested (span 2) */}
+            <div style={{ gridColumn: 'span 2', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.06)', background: '#000', overflow: 'hidden', position: 'relative', transition: 'border-color 0.3s, box-shadow 0.3s' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,200,0.2)'; e.currentTarget.style.boxShadow = '0 0 40px rgba(0,229,200,0.04)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.boxShadow = 'none' }}
+            >
+              <div style={{ height: '2px', background: 'linear-gradient(90deg, transparent, rgba(0,229,200,0.2), rgba(168,85,247,0.3), transparent)' }} />
+              <div style={{ padding: '2rem 2.5rem', display: 'flex', gap: '3rem', alignItems: 'center' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '9px', letterSpacing: '0.18em', color: 'rgba(224,224,224,0.3)', marginBottom: '0.6rem', textTransform: 'uppercase' }}>Battle-Tested</div>
+                  <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1.05rem', color: '#fff', letterSpacing: '-0.01em', marginBottom: '0.75rem', lineHeight: 1.3 }}>
+                    6+ months of development. 4 years of industry expertise.
+                  </div>
+                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: 'rgba(224,224,224,0.4)', lineHeight: 1.7, maxWidth: '420px' }}>
+                    Every edge case encountered. Every failure mode patched. The system was built by operators who have spent 4+ years inside the dating app agency industry — we know exactly what breaks accounts and how to avoid it.
+                  </p>
+                </div>
+                {/* Timeline visual */}
+                <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '0' }}>
+                  {[
+                    { label: 'Industry start',   date: '2021', color: 'rgba(224,224,224,0.2)' },
+                    { label: 'Automation R&D',   date: '2024', color: 'rgba(0,212,255,0.5)' },
+                    { label: 'Pipeline built',   date: '2025', color: 'rgba(0,229,200,0.7)' },
+                    { label: 'System live',      date: '2026', color: '#00e5c8', active: true },
+                  ].map((t, i) => (
+                    <div key={t.date} style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: i < 3 ? '16px' : '0', position: 'relative' }}>
+                      {i < 3 && <div style={{ position: 'absolute', left: '5px', top: '14px', width: '1px', height: '20px', background: 'rgba(255,255,255,0.08)' }} />}
+                      <div style={{ width: 11, height: 11, borderRadius: '50%', border: `1px solid ${t.color}`, background: (t as {active?: boolean}).active ? t.color : 'transparent', flexShrink: 0, boxShadow: (t as {active?: boolean}).active ? `0 0 10px ${t.color}` : 'none' }} />
+                      <div>
+                        <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '9px', fontWeight: 700, color: t.color, letterSpacing: '0.1em' }}>{t.date}</div>
+                        <div style={{ fontFamily: 'Inter, sans-serif', fontSize: '11px', color: 'rgba(224,224,224,0.3)' }}>{t.label}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Bottom guarantee banner */}
+          <div style={{ marginTop: '1.5rem', padding: '1.75rem 2.5rem', borderRadius: '14px', border: '1px solid rgba(0,229,200,0.12)', background: 'rgba(0,229,200,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '10px', border: '1px solid rgba(0,229,200,0.25)', background: 'rgba(0,229,200,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 20px rgba(0,229,200,0.1)' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00e5c8" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <div>
+                <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.95rem', color: '#fff', letterSpacing: '-0.01em', marginBottom: '2px' }}>Guaranteed quality or you don&apos;t pay.</div>
+                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', color: 'rgba(224,224,224,0.3)', letterSpacing: '0.05em' }}>Credits are charged exclusively on AI-confirmed live accounts. Every time.</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '2rem', flexShrink: 0 }}>
+              {['No pay on failure', 'AI-confirmed only', 'Tested at scale'].map(item => (
+                <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#00e5c8', boxShadow: '0 0 8px rgba(0,229,200,0.6)' }} />
+                  <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', color: 'rgba(0,229,200,0.5)', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </section>
+
       {/* ── PRICING ────────────────────────────────────────────────────── */}
       <section id="pricing" style={{ padding: '7rem 2.5rem', position: 'relative', zIndex: 10 }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
