@@ -102,30 +102,108 @@ const STAGES = [
 const PLANS = [
   {
     name: 'Trial',
-    desc: 'Test the system',
-    price: '$2',
-    per: 'per account',
-    limit: '10 accounts max · one time',
+    tagline: 'Test the system',
+    price: '$2.00',
+    monthly: null,
+    monthlyNote: 'One-time starter pack',
+    volume: '1–10 accounts',
     highlight: false,
-    features: ['Full automation pipeline', 'Real-time tracking', 'Photo upload'],
+    badge: null,
+    accent: 'rgba(0,212,255,0.85)',
+    accentBorder: 'rgba(0,212,255,0.25)',
+    accentGlow: 'rgba(0,212,255,0.08)',
+    savings: null,
+    features: [
+      'Full 6-stage automation pipeline',
+      'Geelark cloud phone per account',
+      'Real US number SMS verification',
+      'AI vision Stage 6 confirmation',
+      'Real-time job & stage tracking',
+      'Custom photo upload pipeline',
+    ],
   },
   {
     name: 'Scale',
-    desc: 'For growing agencies',
-    price: '$250',
-    per: 'per month',
-    limit: '$1.00/account · 500+ accounts',
+    tagline: 'For growing agencies',
+    price: '$1.00',
+    monthly: '$250',
+    monthlyNote: 'per month · 500+ accounts/mo',
+    volume: '500+ accounts/mo',
     highlight: true,
-    features: ['Everything in Growth', 'Priority processing', 'Volume discount', 'Dedicated support'],
+    badge: 'MOST POPULAR',
+    accent: '#00ff41',
+    accentBorder: 'rgba(0,255,65,0.4)',
+    accentGlow: 'rgba(0,255,65,0.07)',
+    savings: 'SAVE 50%',
+    features: [
+      'Everything in Trial',
+      'Priority queue — faster processing',
+      '50% lower cost per account',
+      'Batch jobs up to 500/mo',
+      'Dedicated support channel',
+      'Custom photo pipeline config',
+    ],
   },
   {
     name: 'Agency',
-    desc: 'Maximum volume',
-    price: '$250',
-    per: 'per month',
-    limit: '$0.50/account · 1000+ accounts',
+    tagline: 'Maximum volume',
+    price: '$0.50',
+    monthly: 'Custom',
+    monthlyNote: 'per month · 1000+ accounts/mo',
+    volume: '1000+ accounts/mo',
     highlight: false,
-    features: ['Everything in Scale', 'Lowest per-account cost', 'Bulk credit grants'],
+    badge: 'BEST VALUE',
+    accent: 'rgba(168,85,247,0.9)',
+    accentBorder: 'rgba(168,85,247,0.3)',
+    accentGlow: 'rgba(168,85,247,0.07)',
+    savings: 'SAVE 75%',
+    features: [
+      'Everything in Scale',
+      'Lowest cost per account — ever',
+      'Bulk credit grant system',
+      'Dedicated infrastructure slice',
+      'White-glove onboarding',
+      'Custom integration requests',
+    ],
+  },
+]
+
+const ROADMAP_STEPS = [
+  {
+    n: '01',
+    title: 'Start Trial',
+    price: '$2.00',
+    volume: '1–10 accounts',
+    saving: null,
+    savedMonth: null,
+    desc: 'Full pipeline access, no commitment. Every stage, every feature — test before you commit at scale.',
+    perks: ['Zero setup cost', 'Full feature access', 'Pay per live account'],
+    color: 'rgba(0,212,255,0.9)',
+    glow: 'rgba(0,212,255,0.2)',
+  },
+  {
+    n: '02',
+    title: 'Scale Tier',
+    price: '$1.00',
+    volume: '500 accounts/mo',
+    saving: '50% OFF',
+    savedMonth: '$500 saved/mo',
+    desc: 'Half the cost. At 500 accounts/month the Scale tier saves you $500 every single month vs Trial.',
+    perks: ['Priority processing queue', 'Dedicated support', 'Volume batch jobs'],
+    color: '#00ff41',
+    glow: 'rgba(0,255,65,0.2)',
+  },
+  {
+    n: '03',
+    title: 'Agency Tier',
+    price: '$0.50',
+    volume: '1000 accounts/mo',
+    saving: '75% OFF',
+    savedMonth: '$1,500 saved/mo',
+    desc: 'Quarter of the Trial rate. Running 1000 accounts/month saves $1,500 every month vs starting price.',
+    perks: ['Lowest per-account cost', 'Dedicated infra slice', 'Custom integrations'],
+    color: 'rgba(168,85,247,0.9)',
+    glow: 'rgba(168,85,247,0.2)',
   },
 ]
 
@@ -449,100 +527,298 @@ export default function LandingPage() {
       </section>
 
       {/* ── PRICING ────────────────────────────────────────────────────── */}
-      <section id="pricing" style={{ padding: '7rem 2.5rem', position: 'relative', zIndex: 10 }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+      <section id="pricing" style={{ padding: '7rem 2.5rem 0', position: 'relative', zIndex: 10 }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+
+          {/* Header */}
+          <div style={{ textAlign: 'center', marginBottom: '4.5rem' }}>
             <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.25em', color: 'rgba(168,85,247,0.6)', textTransform: 'uppercase', marginBottom: '1rem' }}>
               Pricing
             </div>
-            <h2 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: 'clamp(2rem, 4vw, 3rem)', color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: '1rem' }}>
-              Only pay for success
+            <h2 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: 'clamp(2.2rem, 4vw, 3.25rem)', color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.05, marginBottom: '1.25rem' }}>
+              Pay only when accounts go live
             </h2>
-            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', color: 'rgba(224,224,224,0.4)', maxWidth: '420px', margin: '0 auto', lineHeight: 1.7 }}>
-              1 credit = $1. Credits are only charged when Stage 6 AI confirms a live Bumble account.
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.05rem', color: 'rgba(224,224,224,0.4)', maxWidth: '460px', margin: '0 auto 2rem', lineHeight: 1.75 }}>
+              1 credit = 1 live Bumble account. Credits are charged only after Stage 6 AI confirms the account is active.
             </p>
+            {/* Cost comparison pill */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '100px', overflow: 'hidden' }}>
+              {[['Trial','$2.00','rgba(0,212,255,0.7)'],['Scale','$1.00','#00ff41'],['Agency','$0.50','rgba(168,85,247,0.9)']].map(([label,price,color],i) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '8px 20px', borderRight: i < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none', background: 'rgba(255,255,255,0.02)' }}>
+                  <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '9px', letterSpacing: '0.15em', color: 'rgba(224,224,224,0.35)', textTransform: 'uppercase' }}>{label}</span>
+                  <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '14px', color: color as string }}>{price}</span>
+                  <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '8px', color: 'rgba(224,224,224,0.25)' }}>/ACCT</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+          {/* Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem', alignItems: 'start' }}>
             {PLANS.map(plan => (
               <div
                 key={plan.name}
                 style={{
-                  borderRadius: '14px',
-                  padding: '2.25rem',
-                  border: plan.highlight ? '1px solid rgba(0,255,65,0.4)' : '1px solid rgba(255,255,255,0.06)',
-                  background: plan.highlight ? 'rgba(0,255,65,0.04)' : 'rgba(255,255,255,0.02)',
-                  boxShadow: plan.highlight ? '0 0 50px rgba(0,255,65,0.08), inset 0 0 30px rgba(0,255,65,0.02)' : 'none',
+                  borderRadius: '16px',
+                  padding: '0',
+                  border: `1px solid ${plan.accentBorder}`,
+                  background: '#000',
+                  boxShadow: plan.highlight
+                    ? `0 0 60px ${plan.accentGlow}, 0 0 120px ${plan.accentGlow}`
+                    : `0 0 30px rgba(0,0,0,0.5)`,
                   position: 'relative',
-                  transition: 'transform 0.2s',
+                  overflow: 'hidden',
+                  transition: 'transform 0.25s, box-shadow 0.25s',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
-                onMouseLeave={e => (e.currentTarget.style.transform = 'none')}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = `0 12px 60px ${plan.accentGlow}, 0 0 100px ${plan.accentGlow}` }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = plan.highlight ? `0 0 60px ${plan.accentGlow}` : '0 0 30px rgba(0,0,0,0.5)' }}
               >
-                {plan.highlight && (
+                {/* Top accent bar */}
+                <div style={{ height: '3px', background: `linear-gradient(90deg, ${plan.accent}, transparent)` }} />
+
+                {/* Badge */}
+                {plan.badge && (
                   <div style={{
-                    position: 'absolute', top: '-1px', left: '50%', transform: 'translateX(-50%)',
+                    position: 'absolute', top: '18px', right: '18px',
                     fontFamily: '"JetBrains Mono", monospace',
-                    fontSize: '9px', fontWeight: 700, letterSpacing: '0.2em',
-                    color: '#000', background: '#00ff41',
-                    padding: '4px 16px',
-                    borderRadius: '0 0 8px 8px',
+                    fontSize: '8px', fontWeight: 700, letterSpacing: '0.18em',
+                    color: plan.highlight ? '#000' : plan.accent,
+                    background: plan.highlight ? plan.accent : `${plan.accentBg}`,
+                    border: plan.highlight ? 'none' : `1px solid ${plan.accentBorder}`,
+                    padding: '4px 10px', borderRadius: '4px',
                   }}>
-                    MOST POPULAR
+                    {plan.badge}
                   </div>
                 )}
 
-                <div style={{ marginBottom: '0.5rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1.2rem', color: '#fff' }}>{plan.name}</div>
-                <div style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', color: 'rgba(224,224,224,0.4)', marginBottom: '1.75rem' }}>{plan.desc}</div>
+                <div style={{ padding: '2rem 2rem 2.25rem' }}>
+                  {/* Plan name */}
+                  <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '11px', letterSpacing: '0.18em', color: plan.accent, marginBottom: '0.35rem', textTransform: 'uppercase' }}>
+                    {plan.name}
+                  </div>
+                  <div style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', color: 'rgba(224,224,224,0.35)', marginBottom: '2rem' }}>
+                    {plan.tagline}
+                  </div>
 
-                <div style={{ marginBottom: '0.25rem', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                  <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '2.75rem', color: plan.highlight ? '#00ff41' : '#fff', letterSpacing: '-0.04em', lineHeight: 1 }}>{plan.price}</span>
-                  <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '11px', color: 'rgba(224,224,224,0.35)' }}>{plan.per}</span>
-                </div>
-                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', color: plan.highlight ? 'rgba(0,255,65,0.6)' : 'rgba(224,224,224,0.3)', marginBottom: '2rem', letterSpacing: '0.05em' }}>
-                  {plan.limit}
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '2rem' }}>
-                  {plan.features.map(f => (
-                    <div key={f} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={plan.highlight ? '#00ff41' : 'rgba(224,224,224,0.3)'} strokeWidth="2.5">
-                        <path d="M5 13l4 4L19 7"/>
-                      </svg>
-                      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', color: 'rgba(224,224,224,0.55)' }}>{f}</span>
+                  {/* HERO — per-account price */}
+                  <div style={{ marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '9px', letterSpacing: '0.2em', color: 'rgba(224,224,224,0.3)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                      Per account
                     </div>
-                  ))}
-                </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '0.4rem' }}>
+                      <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '3.5rem', color: plan.accent, letterSpacing: '-0.05em', lineHeight: 1, textShadow: `0 0 30px ${plan.accentGlow}` }}>
+                        {plan.price}
+                      </span>
+                      <div style={{ paddingBottom: '6px' }}>
+                        <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', color: 'rgba(224,224,224,0.4)', letterSpacing: '0.05em' }}>per</div>
+                        <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', color: 'rgba(224,224,224,0.4)', letterSpacing: '0.05em' }}>account</div>
+                      </div>
+                      {plan.savings && (
+                        <div style={{
+                          marginLeft: 'auto', paddingBottom: '6px',
+                          fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em',
+                          color: plan.accent, background: plan.accentBg,
+                          border: `1px solid ${plan.accentBorder}`,
+                          padding: '4px 10px', borderRadius: '4px',
+                        }}>
+                          {plan.savings}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', color: 'rgba(224,224,224,0.3)', letterSpacing: '0.05em' }}>
+                      {plan.monthly ? (
+                        <><span style={{ color: 'rgba(224,224,224,0.55)', fontWeight: 600 }}>{plan.monthly}</span> {plan.monthlyNote}</>
+                      ) : plan.monthlyNote}
+                    </div>
+                  </div>
 
-                <Link href="/signup" style={{
-                  display: 'block', textAlign: 'center',
-                  fontFamily: '"JetBrains Mono", monospace', fontWeight: 700,
-                  fontSize: '11px', letterSpacing: '0.12em',
-                  padding: '12px', borderRadius: '7px',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s',
-                  ...(plan.highlight
-                    ? { background: '#00ff41', color: '#000', boxShadow: '0 0 20px rgba(0,255,65,0.3)' }
-                    : { background: 'transparent', color: 'rgba(224,224,224,0.55)', border: '1px solid rgba(255,255,255,0.08)' }
-                  ),
-                }}
-                  onMouseEnter={e => {
-                    if (plan.highlight) e.currentTarget.style.boxShadow = '0 0 35px rgba(0,255,65,0.5)'
-                    else { e.currentTarget.style.borderColor = 'rgba(0,255,65,0.3)'; e.currentTarget.style.color = '#00ff41' }
+                  {/* Features */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '11px', marginBottom: '2rem' }}>
+                    {plan.features.map(f => (
+                      <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={plan.accent} strokeWidth="2.5" style={{ flexShrink: 0, marginTop: '2px', opacity: 0.8 }}>
+                          <path d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.83rem', color: 'rgba(224,224,224,0.5)', lineHeight: 1.5 }}>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* CTA */}
+                  <Link href="/signup" style={{
+                    display: 'block', textAlign: 'center',
+                    fontFamily: '"JetBrains Mono", monospace', fontWeight: 700,
+                    fontSize: '11px', letterSpacing: '0.12em',
+                    padding: '13px', borderRadius: '8px',
+                    textDecoration: 'none', transition: 'all 0.2s',
+                    ...(plan.highlight
+                      ? { background: plan.accent, color: '#000', boxShadow: `0 0 25px ${plan.accentGlow}` }
+                      : { background: 'transparent', color: plan.accent, border: `1px solid ${plan.accentBorder}` }
+                    ),
                   }}
-                  onMouseLeave={e => {
-                    if (plan.highlight) e.currentTarget.style.boxShadow = '0 0 20px rgba(0,255,65,0.3)'
-                    else { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(224,224,224,0.55)' }
-                  }}
-                >
-                  GET STARTED
-                </Link>
+                    onMouseEnter={e => {
+                      if (plan.highlight) e.currentTarget.style.boxShadow = `0 4px 40px ${plan.accentGlow}`
+                      else e.currentTarget.style.background = plan.accentBg as string
+                    }}
+                    onMouseLeave={e => {
+                      if (plan.highlight) e.currentTarget.style.boxShadow = `0 0 25px ${plan.accentGlow}`
+                      else e.currentTarget.style.background = 'transparent'
+                    }}
+                  >
+                    {plan.name === 'Agency' ? 'CONTACT US' : 'GET STARTED'}
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
 
-          <div style={{ textAlign: 'center', marginTop: '2rem', fontFamily: '"JetBrains Mono", monospace', fontSize: '11px', color: 'rgba(0,255,65,0.3)', letterSpacing: '0.1em' }}>
+          <div style={{ textAlign: 'center', marginTop: '1.5rem', fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', color: 'rgba(0,255,65,0.25)', letterSpacing: '0.1em' }}>
             Payments via crypto · Contact @aidetectionkiller on Telegram
+          </div>
+        </div>
+
+        {/* ── SCALING ROADMAP ──────────────────────────────────────── */}
+        <div style={{ maxWidth: '1100px', margin: '5rem auto 0', padding: '0 0 0' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.25em', color: 'rgba(0,212,255,0.4)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+              Your Growth Path
+            </div>
+            <h3 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: 'clamp(1.6rem, 3vw, 2.4rem)', color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+              The more you scale,<br />
+              <span style={{ color: 'rgba(224,224,224,0.3)' }}>the less each account costs.</span>
+            </h3>
+          </div>
+
+          {/* Roadmap steps */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'rgba(255,255,255,0.04)', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.04)' }}>
+            {ROADMAP_STEPS.map((step, idx) => (
+              <div key={step.n} style={{ background: '#000', padding: '2.5rem 2rem', position: 'relative', transition: 'background 0.25s' }}
+                onMouseEnter={e => (e.currentTarget.style.background = `rgba(0,0,0,0.0)`)}
+                onMouseLeave={e => (e.currentTarget.style.background = '#000')}
+              >
+                {/* Step number + connector arrow */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', border: `1px solid ${step.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 14px ${step.glow}`, flexShrink: 0 }}>
+                    <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', fontWeight: 700, color: step.color }}>{step.n}</span>
+                  </div>
+                  <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.95rem', color: '#fff', letterSpacing: '-0.01em' }}>{step.title}</span>
+                  {idx < 2 && (
+                    <div style={{ position: 'absolute', right: '-1px', top: '50%', transform: 'translateY(-50%)', zIndex: 2, color: 'rgba(255,255,255,0.12)', fontSize: '18px', fontFamily: 'monospace' }}>›</div>
+                  )}
+                </div>
+
+                {/* Price hero */}
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '0.5rem' }}>
+                  <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '2.6rem', color: step.color, letterSpacing: '-0.04em', lineHeight: 1, textShadow: `0 0 20px ${step.glow}` }}>
+                    {step.price}
+                  </span>
+                  <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '11px', color: 'rgba(224,224,224,0.35)' }}>/account</span>
+                </div>
+                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', color: 'rgba(224,224,224,0.3)', letterSpacing: '0.05em', marginBottom: '1.5rem' }}>
+                  {step.volume}
+                </div>
+
+                {/* Savings callout */}
+                {step.saving && (
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+                    <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em', color: step.color, background: step.glow, border: `1px solid ${step.color}`, padding: '4px 12px', borderRadius: '4px' }}>
+                      {step.saving}
+                    </div>
+                    <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', color: step.color, opacity: 0.6, padding: '4px 0', letterSpacing: '0.05em' }}>
+                      {step.savedMonth}
+                    </div>
+                  </div>
+                )}
+
+                {/* Description */}
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.83rem', color: 'rgba(224,224,224,0.4)', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+                  {step.desc}
+                </p>
+
+                {/* Perks */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {step.perks.map(p => (
+                    <div key={p} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: step.color, boxShadow: `0 0 6px ${step.glow}`, flexShrink: 0 }} />
+                      <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.05em', color: 'rgba(224,224,224,0.4)' }}>{p}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Savings comparison bar */}
+          <div style={{ marginTop: '1.5rem', padding: '1.75rem 2rem', background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '9px', letterSpacing: '0.2em', color: 'rgba(224,224,224,0.25)', textTransform: 'uppercase', marginBottom: '1.25rem' }}>
+              Monthly savings vs Trial pricing
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+              {[
+                { label: '100 accounts/mo', trial: '$200', scale: null, agency: null, saved: null, color: 'rgba(0,212,255,0.7)' },
+                { label: '500 accounts/mo', trial: '$1,000', scale: '$500', saved: '$500/mo', color: '#00ff41' },
+                { label: '1000 accounts/mo', trial: '$2,000', scale: '$1,000', agency: '$500', saved: '$1,500/mo', color: 'rgba(168,85,247,0.9)' },
+              ].map(row => (
+                <div key={row.label} style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                  <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '9px', letterSpacing: '0.1em', color: 'rgba(224,224,224,0.3)', marginBottom: '0.6rem' }}>{row.label}</div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '0.3rem' }}>
+                    <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.7rem', color: 'rgba(224,224,224,0.25)', textDecoration: 'line-through' }}>{row.trial}</span>
+                    <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '8px', color: 'rgba(224,224,224,0.2)' }}>Trial</span>
+                  </div>
+                  {row.saved && (
+                    <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '1.1rem', color: row.color, letterSpacing: '-0.02em', textShadow: `0 0 10px ${row.color}` }}>
+                      Save {row.saved}
+                    </div>
+                  )}
+                  {!row.saved && (
+                    <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '9px', color: 'rgba(224,224,224,0.2)', marginTop: '4px' }}>—</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── PRICING CTA ──────────────────────────────────────────── */}
+        <div style={{ maxWidth: '1100px', margin: '4rem auto 0', paddingBottom: '7rem', position: 'relative' }}>
+          {/* Glow */}
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '600px', height: '200px', background: 'radial-gradient(ellipse, rgba(0,255,65,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+          <div style={{ padding: '3.5rem 3rem', border: '1px solid rgba(0,255,65,0.12)', borderRadius: '20px', background: 'rgba(0,255,65,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2rem', flexWrap: 'wrap', position: 'relative' }}>
+            {/* Left copy */}
+            <div>
+              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.2em', color: 'rgba(0,255,65,0.5)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+                Start today
+              </div>
+              <h3 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: 'clamp(1.5rem, 2.5vw, 2rem)', color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: '0.6rem' }}>
+                10 accounts at $2 each.<br />
+                <span style={{ color: 'rgba(224,224,224,0.35)' }}>Scale and cut costs in half.</span>
+              </h3>
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', color: 'rgba(224,224,224,0.35)', maxWidth: '400px', lineHeight: 1.7 }}>
+                No monthly commitment on Trial. Upgrade to Scale when you hit volume — your cost drops automatically.
+              </p>
+            </div>
+            {/* Right CTAs */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-end' }}>
+              <Link href="/signup" style={{
+                display: 'inline-block', fontFamily: '"JetBrains Mono", monospace', fontWeight: 700,
+                fontSize: '12px', letterSpacing: '0.12em', color: '#000', background: '#00ff41',
+                padding: '16px 42px', borderRadius: '8px', textDecoration: 'none',
+                boxShadow: '0 0 35px rgba(0,255,65,0.4)',
+                transition: 'all 0.2s',
+              }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 50px rgba(0,255,65,0.6)' }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 0 35px rgba(0,255,65,0.4)' }}
+              >
+                START FREE TRIAL
+              </Link>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00ff41', display: 'inline-block', animation: 'blink 1.5s ease-in-out infinite', boxShadow: '0 0 8px #00ff41' }} />
+                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(0,255,65,0.4)' }}>
+                  ACCOUNTS CREATING NOW
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
