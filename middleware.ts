@@ -1,14 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 /**
- * Lightweight proxy — checks for Supabase session cookie to protect routes.
+ * Edge-compatible middleware — no external imports, simple cookie check.
  * Actual auth verification happens in server components (dashboard layout).
- * We avoid importing @supabase/ssr here to keep the edge runtime compatible.
  */
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Check for any Supabase auth cookie (named sb-*-auth-token)
+  // Supabase stores the session in cookies named sb-<project-ref>-auth-token
   const hasSession = request.cookies.getAll().some(c => c.name.includes('auth-token'))
 
   const protectedPaths = ['/dashboard', '/create', '/jobs', '/settings', '/credits', '/admin']
