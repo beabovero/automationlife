@@ -12,7 +12,7 @@ const SEQUENCE = [
   { delay: 4100, type: 'cmd',     text: 'upload-photos --count 4' },
   { delay: 4700, type: 'success', text: '✓ 4/4 photos delivered to phone' },
   { delay: 5200, type: 'info',    text: '→ Stage 3: Phone verification' },
-  { delay: 5900, type: 'info',    text: '  pvapins → +1 (347) 555-0192' },
+  { delay: 5900, type: 'info',    text: '  sms-provider → +1 (347) 555-0192' },
   { delay: 6800, type: 'info',    text: '  SMS received → code: 482917' },
   { delay: 7500, type: 'success', text: '✓ Verified. Moving to profile...' },
   { delay: 8200, type: 'info',    text: '→ Stage 4: Profile setup' },
@@ -36,21 +36,16 @@ const COLORS: Record<string, string> = {
 
 export default function TerminalWindow() {
   const [visible, setVisible] = useState<number[]>([])
+  const [tick, setTick] = useState(0)
 
   useEffect(() => {
+    setVisible([])
     const timers = SEQUENCE.map((item, i) =>
       setTimeout(() => setVisible(v => [...v, i]), item.delay),
     )
-    // Loop
-    const reset = setTimeout(() => setVisible([]), 15000)
-    return () => { timers.forEach(clearTimeout); clearTimeout(reset) }
-  }, [])
-
-  // Re-trigger loop
-  const [tick, setTick] = useState(0)
-  useEffect(() => {
-    const t = setTimeout(() => setTick(x => x + 1), 15500)
-    return () => clearTimeout(t)
+    // After full sequence + pause, restart
+    const next = setTimeout(() => setTick(x => x + 1), 15500)
+    return () => { timers.forEach(clearTimeout); clearTimeout(next) }
   }, [tick])
 
   return (
