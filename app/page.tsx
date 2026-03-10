@@ -583,7 +583,7 @@ export default function LandingPage() {
                     fontFamily: '"JetBrains Mono", monospace',
                     fontSize: '8px', fontWeight: 700, letterSpacing: '0.18em',
                     color: plan.highlight ? '#000' : plan.accent,
-                    background: plan.highlight ? plan.accent : `${plan.accentBg}`,
+                    background: plan.highlight ? plan.accent : `${plan.accentGlow}`,
                     border: plan.highlight ? 'none' : `1px solid ${plan.accentBorder}`,
                     padding: '4px 10px', borderRadius: '4px',
                   }}>
@@ -617,7 +617,7 @@ export default function LandingPage() {
                         <div style={{
                           marginLeft: 'auto', paddingBottom: '6px',
                           fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em',
-                          color: plan.accent, background: plan.accentBg,
+                          color: plan.accent, background: plan.accentGlow,
                           border: `1px solid ${plan.accentBorder}`,
                           padding: '4px 10px', borderRadius: '4px',
                         }}>
@@ -658,7 +658,7 @@ export default function LandingPage() {
                   }}
                     onMouseEnter={e => {
                       if (plan.highlight) e.currentTarget.style.boxShadow = `0 4px 40px ${plan.accentGlow}`
-                      else e.currentTarget.style.background = plan.accentBg as string
+                      else e.currentTarget.style.background = plan.accentGlow as string
                     }}
                     onMouseLeave={e => {
                       if (plan.highlight) e.currentTarget.style.boxShadow = `0 0 25px ${plan.accentGlow}`
