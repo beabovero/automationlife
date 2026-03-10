@@ -437,6 +437,165 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── BENEFITS ───────────────────────────────────────────────────── */}
+      <section style={{ padding: '7rem 2.5rem', position: 'relative', zIndex: 10, overflow: 'hidden', background: 'rgba(255,255,255,0.01)', borderTop: '1px solid rgba(255,255,255,0.03)' }}>
+
+        {/* Ambient glows */}
+        <div style={{ position: 'absolute', top: '10%', left: '-10%', width: '500px', height: '500px', background: 'radial-gradient(ellipse, rgba(239,68,68,0.04) 0%, transparent 65%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: '10%', right: '-10%', width: '500px', height: '500px', background: 'radial-gradient(ellipse, rgba(0,229,200,0.05) 0%, transparent 65%)', pointerEvents: 'none' }} />
+
+        <div style={{ maxWidth: '1100px', margin: '0 auto', position: 'relative' }}>
+
+          {/* Header */}
+          <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
+            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.25em', color: 'rgba(239,68,68,0.6)', textTransform: 'uppercase', marginBottom: '1.25rem' }}>
+              For Agency Owners
+            </div>
+            <h2 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: 'clamp(2.4rem, 5vw, 4.2rem)', color: '#fff', letterSpacing: '-0.04em', lineHeight: 0.95, marginBottom: '1.75rem' }}>
+              <span style={{ display: 'block', color: 'rgba(224,224,224,0.25)', textDecoration: 'line-through', fontSize: '0.65em', letterSpacing: '-0.02em', marginBottom: '0.3em', fontStyle: 'italic' }}>VAs. Salaries. Headaches.</span>
+              The old way<br />
+              <span style={{ background: 'linear-gradient(135deg, #00b8d9 0%, #00e5c8 55%, #00f5d4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', filter: 'drop-shadow(0 0 30px rgba(0,229,200,0.5))' }}>
+                is dead.
+              </span>
+            </h2>
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.1rem', color: 'rgba(224,224,224,0.4)', maxWidth: '540px', margin: '0 auto', lineHeight: 1.75 }}>
+              Agencies are bleeding money on VA teams that produce inconsistent results. There is a better way — one that scales infinitely without a single hire.
+            </p>
+          </div>
+
+          {/* Comparison cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'stretch' }}>
+
+            {/* ─── OLD WAY ─── */}
+            <div style={{ borderRadius: '20px', border: '1px solid rgba(239,68,68,0.2)', background: '#000', overflow: 'hidden', position: 'relative' }}>
+              <div style={{ height: '2px', background: 'linear-gradient(90deg, rgba(239,68,68,0.8), rgba(239,68,68,0.2), transparent)' }} />
+              <div style={{ padding: '2.25rem 2.5rem' }}>
+                {/* Label */}
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '5px 14px', marginBottom: '2rem', border: '1px solid rgba(239,68,68,0.25)', background: 'rgba(239,68,68,0.06)', borderRadius: '6px' }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(239,68,68,0.8)" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                  <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '9px', letterSpacing: '0.18em', color: 'rgba(239,68,68,0.7)', textTransform: 'uppercase' }}>The Old Way</span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                  {[
+                    ['Hiring & training VA teams',          'Weeks to onboard, months to trust'],
+                    ['Monthly salaries & payroll',          'Fixed costs whether you produce or not'],
+                    ['A/B testing creation methods',        'Hit-and-miss, burning accounts & money'],
+                    ['Management overhead',                 'Daily babysitting, quality control'],
+                    ['Inconsistent account quality',        'Every VA does it differently'],
+                    ['Scaling = hiring more people',        'Linear cost growth with no ceiling'],
+                    ['Knowledge dies when VA quits',        'Start from zero every time you replace'],
+                  ].map(([pain, sub], i) => (
+                    <div key={pain} style={{
+                      display: 'flex', alignItems: 'flex-start', gap: '14px',
+                      padding: '1rem 0',
+                      borderBottom: i < 6 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                      animation: `slide-up 0.4s ease ${i * 0.07}s both`,
+                    }}>
+                      <div style={{ width: 22, height: 22, borderRadius: '50%', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(239,68,68,0.7)" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '0.875rem', color: 'rgba(224,224,224,0.55)', lineHeight: 1.3, marginBottom: '2px' }}>{pain}</div>
+                        <div style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.775rem', color: 'rgba(239,68,68,0.45)', lineHeight: 1.4 }}>{sub}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* ─── NEW WAY ─── */}
+            <div style={{ borderRadius: '20px', border: '1px solid rgba(0,229,200,0.3)', background: '#000', overflow: 'hidden', position: 'relative', boxShadow: '0 0 80px rgba(0,229,200,0.07)', animation: 'glow-border 3s ease-in-out infinite' }}>
+              <div style={{ height: '2px', background: 'linear-gradient(90deg, #00b8d9, #00e5c8, #00f5d4)' }} />
+
+              {/* Top-right badge */}
+              <div style={{ position: 'absolute', top: '20px', right: '20px', fontFamily: '"JetBrains Mono", monospace', fontSize: '8px', fontWeight: 700, letterSpacing: '0.18em', color: '#000', background: 'linear-gradient(135deg, #00b8d9, #00e5c8)', padding: '5px 12px', borderRadius: '4px' }}>
+                YOUR EDGE
+              </div>
+
+              <div style={{ padding: '2.25rem 2.5rem' }}>
+                {/* Label */}
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '5px 14px', marginBottom: '2rem', border: '1px solid rgba(0,229,200,0.25)', background: 'rgba(0,229,200,0.06)', borderRadius: '6px' }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#00e5c8" strokeWidth="2.5"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                  <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '9px', letterSpacing: '0.18em', color: '#00e5c8', textTransform: 'uppercase' }}>With VA Nightmare</span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                  {[
+                    ['Scale on autopilot — no team needed',   'One platform replaces your entire creation team'],
+                    ['Zero salaries. Zero payroll.',           'Pay only for accounts that go live. Nothing else.'],
+                    ['Proven method. No testing required.',    'Six stages, perfected. Works every single time.'],
+                    ['Zero management overhead',               'Set it. Run it. Collect accounts.'],
+                    ['Consistent quality, every account',      'Same pipeline. Same result. Always.'],
+                    ['Scaling = clicking a number',            'Infinite output. No new hires, ever.'],
+                    ['System knowledge stays forever',         'No VA dependency. No single point of failure.'],
+                  ].map(([win, sub], i) => (
+                    <div key={win} style={{
+                      display: 'flex', alignItems: 'flex-start', gap: '14px',
+                      padding: '1rem 0',
+                      borderBottom: i < 6 ? '1px solid rgba(0,229,200,0.06)' : 'none',
+                      animation: `slide-up 0.4s ease ${0.1 + i * 0.07}s both`,
+                    }}>
+                      <div style={{ width: 22, height: 22, borderRadius: '50%', border: '1px solid rgba(0,229,200,0.35)', background: 'rgba(0,229,200,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px', boxShadow: '0 0 8px rgba(0,229,200,0.2)' }}>
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#00e5c8" strokeWidth="3"><path d="M5 13l4 4L19 7"/></svg>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: '0.875rem', color: '#fff', lineHeight: 1.3, marginBottom: '2px' }}>{win}</div>
+                        <div style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.775rem', color: 'rgba(0,229,200,0.5)', lineHeight: 1.4 }}>{sub}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom impact strip — 3 big callouts */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'rgba(0,229,200,0.07)', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(0,229,200,0.07)' }}>
+            {[
+              {
+                icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00e5c8" strokeWidth="1.75"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>,
+                headline: 'Max output.',
+                sub: 'Min input.',
+                body: 'Queue accounts and walk away. The system runs 24/7 — while you focus on growth, clients, and everything that actually matters.',
+                color: '#00e5c8',
+                glow: 'rgba(0,229,200,0.15)',
+              },
+              {
+                icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(168,85,247,0.9)" strokeWidth="1.75"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>,
+                headline: 'No team.',
+                sub: 'No headaches.',
+                body: 'Eliminate VA hiring, training, managing, and replacing entirely. Your operation never depends on a person — only on the system.',
+                color: 'rgba(168,85,247,0.9)',
+                glow: 'rgba(168,85,247,0.15)',
+              },
+              {
+                icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(0,212,255,0.9)" strokeWidth="1.75"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>,
+                headline: 'Cut costs.',
+                sub: 'Keep results.',
+                body: 'Every dollar that used to go to salaries, payroll, and wasted test accounts now goes straight to production output.',
+                color: 'rgba(0,212,255,0.9)',
+                glow: 'rgba(0,212,255,0.15)',
+              },
+            ].map((c) => (
+              <div key={c.headline} style={{ background: '#000', padding: '2.5rem 2rem', position: 'relative', overflow: 'hidden', transition: 'background 0.3s' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.015)')}
+                onMouseLeave={e => (e.currentTarget.style.background = '#000')}
+              >
+                {/* Glow blob */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '60px', background: `radial-gradient(ellipse at 50% 0%, ${c.glow} 0%, transparent 100%)`, pointerEvents: 'none' }} />
+                <div style={{ marginBottom: '1.25rem', opacity: 0.9 }}>{c.icon}</div>
+                <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '1.6rem', color: '#fff', letterSpacing: '-0.03em', lineHeight: 1, marginBottom: '0.2rem' }}>{c.headline}</div>
+                <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '1.6rem', letterSpacing: '-0.03em', lineHeight: 1, marginBottom: '1rem', background: `linear-gradient(135deg, ${c.color}, rgba(255,255,255,0.4))`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{c.sub}</div>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.84rem', color: 'rgba(224,224,224,0.4)', lineHeight: 1.75 }}>{c.body}</p>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
       {/* ── QUALITY GUARANTEE ──────────────────────────────────────────── */}
       <section style={{ padding: '7rem 2.5rem', position: 'relative', zIndex: 10, overflow: 'hidden' }}>
         {/* Background glow */}
