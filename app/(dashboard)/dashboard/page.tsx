@@ -24,9 +24,9 @@ export default async function DashboardPage() {
   const activeJobs = jobs?.filter(j => j.status === 'processing' || j.status === 'queued').length ?? 0
 
   const stats = [
-    { label: 'Credits',         value: (settings?.credits ?? 0).toFixed(0), icon: '⚡', color: '#00ff41' },
+    { label: 'Credits',         value: (settings?.credits ?? 0).toFixed(0), icon: '⚡', color: '#00e5c8' },
     { label: 'Total Accounts',  value: totalAccounts,                         icon: '👤', color: '#00d4ff' },
-    { label: 'Live Accounts',   value: liveAccounts,                          icon: '✅', color: '#00ff41' },
+    { label: 'Live Accounts',   value: liveAccounts,                          icon: '✅', color: '#00e5c8' },
     { label: 'Active Jobs',     value: activeJobs,                            icon: '⚙',  color: '#a855f7' },
   ]
 
@@ -36,7 +36,7 @@ export default async function DashboardPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="font-mono text-2xl font-bold text-white">Dashboard</h1>
-          <p className="mt-1 font-mono text-xs text-[rgba(0,255,65,0.4)]">{user.email}</p>
+          <p className="mt-1 font-mono text-xs text-[rgba(0,229,200,0.4)]">{user.email}</p>
         </div>
         <Link href="/create" className="btn-matrix-solid flex items-center gap-2 rounded text-sm px-5 py-2.5">
           <PlusCircle size={16} />
@@ -72,24 +72,24 @@ export default async function DashboardPage() {
 
       {/* Recent Jobs */}
       <div>
-        <h2 className="mb-4 font-mono text-sm font-bold tracking-widest text-[rgba(0,255,65,0.6)] uppercase">
+        <h2 className="mb-4 font-mono text-sm font-bold tracking-widest text-[rgba(0,229,200,0.6)] uppercase">
           Recent Jobs
         </h2>
         {!jobs || jobs.length === 0 ? (
           <div className="glass-card rounded-xl p-12 text-center">
-            <Activity size={32} className="mx-auto mb-4 text-[rgba(0,255,65,0.3)]" />
+            <Activity size={32} className="mx-auto mb-4 text-[rgba(0,229,200,0.3)]" />
             <div className="font-mono text-sm text-[rgba(224,224,224,0.4)]">No jobs yet</div>
             <Link href="/create" className="btn-matrix mt-6 inline-block rounded px-6 py-2 text-sm">
               <span>Create your first job</span>
             </Link>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-[rgba(0,255,65,0.1)]">
+          <div className="overflow-hidden rounded-xl border border-[rgba(0,229,200,0.1)]">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[rgba(0,255,65,0.1)] bg-[rgba(0,255,65,0.03)]">
+                <tr className="border-b border-[rgba(0,229,200,0.1)] bg-[rgba(0,229,200,0.03)]">
                   {['Job ID', 'Status', 'Progress', 'Credits', 'Created'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left font-mono text-[10px] tracking-widest text-[rgba(0,255,65,0.5)] uppercase">
+                    <th key={h} className="px-4 py-3 text-left font-mono text-[10px] tracking-widest text-[rgba(0,229,200,0.5)] uppercase">
                       {h}
                     </th>
                   ))}
@@ -99,7 +99,7 @@ export default async function DashboardPage() {
                 {jobs.map((job, i) => (
                   <tr
                     key={job.id}
-                    className={`border-b border-[rgba(0,255,65,0.06)] transition-colors hover:bg-[rgba(0,255,65,0.02)] ${
+                    className={`border-b border-[rgba(0,229,200,0.06)] transition-colors hover:bg-[rgba(0,229,200,0.02)] ${
                       i % 2 === 0 ? '' : 'bg-[rgba(0,0,0,0.2)]'
                     }`}
                   >
@@ -111,9 +111,9 @@ export default async function DashboardPage() {
                     <td className="px-4 py-3"><StatusBadge status={job.status} /></td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-24 rounded-full bg-[rgba(0,255,65,0.1)]">
+                        <div className="h-1.5 w-24 rounded-full bg-[rgba(0,229,200,0.1)]">
                           <div
-                            className="h-full rounded-full bg-[#00ff41]"
+                            className="h-full rounded-full bg-[#00e5c8]"
                             style={{ width: `${job.total_accounts ? (job.completed_accounts / job.total_accounts) * 100 : 0}%` }}
                           />
                         </div>
@@ -122,7 +122,7 @@ export default async function DashboardPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs text-[#00ff41]">{job.credits_charged}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-[#00e5c8]">{job.credits_charged}</td>
                     <td className="px-4 py-3 font-mono text-xs text-[rgba(224,224,224,0.4)]">
                       {new Date(job.created_at).toLocaleDateString()}
                     </td>

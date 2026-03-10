@@ -41,7 +41,7 @@ export default function SignupPage() {
         <div className="relative z-10 w-full max-w-md px-6 text-center">
           <div className="glass-card rounded-xl p-10">
             <div className="mb-4 text-5xl">✓</div>
-            <div className="font-mono text-lg font-bold text-[#00ff41] text-glow">Account Created</div>
+            <div className="font-mono text-lg font-bold text-[#00e5c8] text-glow">Account Created</div>
             <p className="mt-3 text-sm text-[rgba(224,224,224,0.6)]">
               Check your email to confirm your account, then sign in.
             </p>
@@ -60,10 +60,10 @@ export default function SignupPage() {
 
       <div className="relative z-10 w-full max-w-md px-6">
         <div className="mb-8 text-center">
-          <div className="mb-2 font-mono text-2xl font-black tracking-widest text-[#00ff41] text-glow">
+          <div className="mb-2 font-mono text-2xl font-black tracking-widest text-[#00e5c8] text-glow">
             VA NIGHTMARE
           </div>
-          <div className="font-mono text-xs tracking-widest text-[rgba(0,255,65,0.4)] uppercase">
+          <div className="font-mono text-xs tracking-widest text-[rgba(0,229,200,0.4)] uppercase">
             New Operator
           </div>
         </div>
@@ -81,7 +81,7 @@ export default function SignupPage() {
 
           <form onSubmit={handleSignup} className="space-y-4">
             <div>
-              <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,255,65,0.6)] uppercase">
+              <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,229,200,0.6)] uppercase">
                 Email
               </label>
               <input
@@ -95,7 +95,7 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,255,65,0.6)] uppercase">
+              <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,229,200,0.6)] uppercase">
                 Password
               </label>
               <input
@@ -109,7 +109,7 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,255,65,0.6)] uppercase">
+              <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,229,200,0.6)] uppercase">
                 Confirm Password
               </label>
               <input
@@ -133,7 +133,7 @@ export default function SignupPage() {
 
           <div className="mt-6 text-center font-mono text-xs text-[rgba(224,224,224,0.4)]">
             Already have an account?{' '}
-            <Link href="/login" className="text-[#00ff41] hover:underline">
+            <Link href="/login" className="text-[#00e5c8] hover:underline">
               Sign in
             </Link>
           </div>

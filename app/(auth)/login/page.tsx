@@ -32,10 +32,10 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-md px-6">
         <div className="mb-8 text-center">
-          <div className="mb-2 font-mono text-2xl font-black tracking-widest text-[#00ff41] text-glow">
+          <div className="mb-2 font-mono text-2xl font-black tracking-widest text-[#00e5c8] text-glow">
             VA NIGHTMARE
           </div>
-          <div className="font-mono text-xs tracking-widest text-[rgba(0,255,65,0.4)] uppercase">
+          <div className="font-mono text-xs tracking-widest text-[rgba(0,229,200,0.4)] uppercase">
             Access Terminal
           </div>
         </div>
@@ -53,7 +53,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,255,65,0.6)] uppercase">
+              <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,229,200,0.6)] uppercase">
                 Email
               </label>
               <input
@@ -67,7 +67,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,255,65,0.6)] uppercase">
+              <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,229,200,0.6)] uppercase">
                 Password
               </label>
               <input
@@ -91,13 +91,13 @@ export default function LoginPage() {
 
           <div className="mt-6 text-center font-mono text-xs text-[rgba(224,224,224,0.4)]">
             No account?{' '}
-            <Link href="/signup" className="text-[#00ff41] hover:underline">
+            <Link href="/signup" className="text-[#00e5c8] hover:underline">
               Create one
             </Link>
           </div>
         </div>
 
-        <div className="mt-6 text-center font-mono text-[10px] text-[rgba(0,255,65,0.3)]">
+        <div className="mt-6 text-center font-mono text-[10px] text-[rgba(0,229,200,0.3)]">
           Pay via crypto · @aidetectionkiller on Telegram
         </div>
       </div>

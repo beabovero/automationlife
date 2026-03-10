@@ -37,7 +37,7 @@ export default function MatrixRain({ opacity = 0.18 }: { opacity?: number }) {
         if (brightness > 0.95) {
           ctx.fillStyle = `rgba(200,255,200,${opacity * 3})`
         } else if (brightness > 0.7) {
-          ctx.fillStyle = `rgba(0,255,65,${opacity * 1.5})`
+          ctx.fillStyle = `rgba(0,229,200,${opacity * 1.5})`
         } else {
           ctx.fillStyle = `rgba(0,180,50,${opacity})`
         }

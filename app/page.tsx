@@ -21,7 +21,7 @@ const BENTO = [
         <path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
       </svg>
     ),
-    color: '#00ff41',
+    color: '#00e5c8',
     label: 'Full Pipeline Automation',
     desc: 'Six stages — phone provisioning, SMS verification, profile photos, all Bumble questions, preferences, and AI confirmation. Zero manual steps.',
     tag: 'CORE',
@@ -57,7 +57,7 @@ const BENTO = [
         <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
       </svg>
     ),
-    color: '#00ff41',
+    color: '#00e5c8',
     label: 'Pay Per Success',
     desc: 'Credits deducted only when Stage 6 AI confirms a live account.',
     tag: 'BILLING',
@@ -131,9 +131,9 @@ const PLANS = [
     volume: '500+ accounts/mo',
     highlight: true,
     badge: 'MOST POPULAR',
-    accent: '#00ff41',
-    accentBorder: 'rgba(0,255,65,0.4)',
-    accentGlow: 'rgba(0,255,65,0.07)',
+    accent: '#00e5c8',
+    accentBorder: 'rgba(0,229,200,0.4)',
+    accentGlow: 'rgba(0,229,200,0.07)',
     savings: 'SAVE 50%',
     features: [
       'Everything in Trial',
@@ -190,8 +190,8 @@ const ROADMAP_STEPS = [
     savedMonth: '$500 saved/mo',
     desc: 'Half the cost. At 500 accounts/month the Scale tier saves you $500 every single month vs Trial.',
     perks: ['Priority processing queue', 'Dedicated support', 'Volume batch jobs'],
-    color: '#00ff41',
-    glow: 'rgba(0,255,65,0.2)',
+    color: '#00e5c8',
+    glow: 'rgba(0,229,200,0.2)',
   },
   {
     n: '03',
@@ -229,17 +229,17 @@ export default function LandingPage() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         transition: 'background 0.3s, border-color 0.3s, backdrop-filter 0.3s',
         background: scrolled ? 'rgba(0,0,0,0.85)' : 'transparent',
-        borderBottom: `1px solid ${scrolled ? 'rgba(0,255,65,0.12)' : 'transparent'}`,
+        borderBottom: `1px solid ${scrolled ? 'rgba(0,229,200,0.12)' : 'transparent'}`,
         backdropFilter: scrolled ? 'blur(20px)' : 'none',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{
-            width: 32, height: 32, border: '1px solid #00ff41',
+            width: 32, height: 32, border: '1px solid #00e5c8',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             borderRadius: '6px',
-            boxShadow: '0 0 12px rgba(0,255,65,0.35)',
+            boxShadow: '0 0 12px rgba(0,229,200,0.35)',
           }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00ff41" strokeWidth="2.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00e5c8" strokeWidth="2.5">
               <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
             </svg>
           </div>
@@ -254,7 +254,7 @@ export default function LandingPage() {
           {['Features', 'How It Works', 'Pricing'].map(l => (
             <a key={l} href={`#${l.toLowerCase().replace(/ /g, '-')}`}
               style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '11px', letterSpacing: '0.1em', color: 'rgba(224,224,224,0.45)', textDecoration: 'none', transition: 'color 0.2s', cursor: 'pointer' }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#00ff41')}
+              onMouseEnter={e => (e.currentTarget.style.color = '#00e5c8')}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(224,224,224,0.45)')}
             >
               {l.toUpperCase()}
@@ -270,13 +270,13 @@ export default function LandingPage() {
           <Link href="/signup"
             style={{
               fontFamily: '"JetBrains Mono", monospace', fontSize: '11px', fontWeight: 700,
-              letterSpacing: '0.1em', color: '#000', background: '#00ff41',
+              letterSpacing: '0.1em', color: '#000', background: 'linear-gradient(135deg, #00b8d9, #00e5c8)',
               padding: '9px 20px', borderRadius: '5px', textDecoration: 'none',
               transition: 'box-shadow 0.2s, background 0.2s',
-              boxShadow: '0 0 20px rgba(0,255,65,0.3)',
+              boxShadow: '0 0 20px rgba(0,229,200,0.3)',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#00cc33'; e.currentTarget.style.boxShadow = '0 0 30px rgba(0,255,65,0.55)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#00ff41'; e.currentTarget.style.boxShadow = '0 0 20px rgba(0,255,65,0.3)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #00a8c9, #00c4aa)'; e.currentTarget.style.boxShadow = '0 0 30px rgba(0,229,200,0.55)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #00b8d9, #00e5c8)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(0,229,200,0.3)' }}
           >
             GET STARTED
           </Link>
@@ -294,7 +294,7 @@ export default function LandingPage() {
         <div style={{
           position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)',
           width: '600px', height: '400px',
-          background: 'radial-gradient(ellipse, rgba(0,255,65,0.04) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse, rgba(0,229,200,0.04) 0%, transparent 70%)',
           pointerEvents: 'none',
         }} />
 
@@ -305,12 +305,12 @@ export default function LandingPage() {
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
               padding: '6px 14px', marginBottom: '2.5rem',
-              border: '1px solid rgba(0,255,65,0.2)',
-              background: 'rgba(0,255,65,0.04)',
+              border: '1px solid rgba(0,229,200,0.2)',
+              background: 'rgba(0,229,200,0.04)',
               borderRadius: '100px',
             }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00ff41', boxShadow: '0 0 8px #00ff41', display: 'inline-block', animation: 'blink 1.5s ease-in-out infinite' }} />
-              <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.18em', color: '#00ff41' }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00e5c8', boxShadow: '0 0 8px #00e5c8', display: 'inline-block', animation: 'blink 1.5s ease-in-out infinite' }} />
+              <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.18em', color: '#00e5c8' }}>
                 SYSTEM ONLINE · AUTOMATIONS RUNNING
               </span>
             </div>
@@ -326,8 +326,9 @@ export default function LandingPage() {
               <span style={{
                 display: 'block',
                 fontSize: 'clamp(3rem, 5.5vw, 5.5rem)', fontWeight: 900, fontFamily: 'Inter, sans-serif',
-                color: '#00ff41',
-                textShadow: '0 0 40px rgba(0,255,65,0.4), 0 0 80px rgba(0,255,65,0.15)',
+                background: 'linear-gradient(135deg, #00b8d9 0%, #00e5c8 55%, #00f5d4 100%)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+                filter: 'drop-shadow(0 0 30px rgba(0,229,200,0.5))',
               }}>
                 Dominate.
               </span>
@@ -349,14 +350,14 @@ export default function LandingPage() {
                 display: 'inline-block',
                 fontFamily: '"JetBrains Mono", monospace', fontWeight: 700,
                 fontSize: '12px', letterSpacing: '0.12em',
-                color: '#000', background: '#00ff41',
+                color: '#000', background: 'linear-gradient(135deg, #00b8d9, #00e5c8)',
                 padding: '14px 32px', borderRadius: '6px',
                 textDecoration: 'none',
-                boxShadow: '0 0 30px rgba(0,255,65,0.35)',
+                boxShadow: '0 0 30px rgba(0,229,200,0.35)',
                 transition: 'all 0.2s',
               }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 40px rgba(0,255,65,0.55)' }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 0 30px rgba(0,255,65,0.35)' }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 40px rgba(0,229,200,0.55)' }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 0 30px rgba(0,229,200,0.35)' }}
               >
                 START FREE TRIAL
               </Link>
@@ -370,7 +371,7 @@ export default function LandingPage() {
                 border: '1px solid rgba(255,255,255,0.1)',
                 transition: 'all 0.2s',
               }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,255,65,0.3)'; e.currentTarget.style.color = '#00ff41' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,200,0.3)'; e.currentTarget.style.color = '#00e5c8' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(224,224,224,0.65)' }}
               >
                 SIGN IN
@@ -385,7 +386,7 @@ export default function LandingPage() {
               {[['6', 'Automation stages'], ['100%', 'Hands-free'], ['24/7', 'Always running']].map(([n, l]) => (
                 <div key={l}>
                   <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '1.75rem', color: '#fff', lineHeight: 1 }}>{n}</div>
-                  <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(0,255,65,0.5)', marginTop: '4px', textTransform: 'uppercase' }}>{l}</div>
+                  <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(0,229,200,0.5)', marginTop: '4px', textTransform: 'uppercase' }}>{l}</div>
                 </div>
               ))}
             </div>
@@ -400,8 +401,8 @@ export default function LandingPage() {
 
       {/* ── MARQUEE ────────────────────────────────────────────────────── */}
       <div style={{
-        borderTop: '1px solid rgba(0,255,65,0.08)',
-        borderBottom: '1px solid rgba(0,255,65,0.08)',
+        borderTop: '1px solid rgba(0,229,200,0.08)',
+        borderBottom: '1px solid rgba(0,229,200,0.08)',
         padding: '14px 0',
         overflow: 'hidden',
         position: 'relative',
@@ -412,7 +413,7 @@ export default function LandingPage() {
             <span key={i} style={{
               fontFamily: '"JetBrains Mono", monospace',
               fontSize: '11px', letterSpacing: '0.15em', whiteSpace: 'nowrap',
-              color: item === '·' ? 'rgba(0,255,65,0.3)' : 'rgba(224,224,224,0.3)',
+              color: item === '·' ? 'rgba(0,229,200,0.3)' : 'rgba(224,224,224,0.3)',
               textTransform: 'uppercase',
             }}>
               {item}
@@ -425,7 +426,7 @@ export default function LandingPage() {
       <section id="features" style={{ padding: '7rem 2.5rem', position: 'relative', zIndex: 10 }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ marginBottom: '4rem' }}>
-            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.25em', color: 'rgba(0,255,65,0.5)', textTransform: 'uppercase', marginBottom: '1rem' }}>
+            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.25em', color: 'rgba(0,229,200,0.5)', textTransform: 'uppercase', marginBottom: '1rem' }}>
               Platform Capabilities
             </div>
             <h2 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: 'clamp(2rem, 4vw, 3rem)', color: '#fff', letterSpacing: '-0.03em', maxWidth: '500px', lineHeight: 1.1 }}>
@@ -434,7 +435,7 @@ export default function LandingPage() {
           </div>
 
           {/* Bento grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'rgba(0,255,65,0.07)', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(0,255,65,0.07)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'rgba(0,229,200,0.07)', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(0,229,200,0.07)' }}>
             {BENTO.map((item) => (
               <div
                 key={item.id}
@@ -446,7 +447,7 @@ export default function LandingPage() {
                   transition: 'background 0.3s',
                   cursor: 'default',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,255,65,0.025)')}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,229,200,0.025)')}
                 onMouseLeave={e => (e.currentTarget.style.background = '#000')}
               >
                 {/* Tag */}
@@ -497,7 +498,7 @@ export default function LandingPage() {
                 <div style={{
                   fontFamily: '"JetBrains Mono", monospace',
                   fontSize: '11px', fontWeight: 700,
-                  color: i === 5 ? '#00ff41' : 'rgba(0,212,255,0.5)',
+                  color: i === 5 ? '#00e5c8' : 'rgba(0,212,255,0.5)',
                   marginBottom: '1.25rem', letterSpacing: '0.1em',
                 }}>
                   {s.n}
@@ -514,9 +515,9 @@ export default function LandingPage() {
                     display: 'inline-flex', alignItems: 'center', gap: '5px',
                     fontFamily: '"JetBrains Mono", monospace',
                     fontSize: '9px', letterSpacing: '0.15em',
-                    color: '#00ff41', opacity: 0.7,
+                    color: '#00e5c8', opacity: 0.7,
                   }}>
-                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#00ff41', display: 'inline-block', animation: 'blink 1.5s ease-in-out infinite' }} />
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#00e5c8', display: 'inline-block', animation: 'blink 1.5s ease-in-out infinite' }} />
                     CREDIT CHARGED HERE
                   </div>
                 )}
@@ -543,7 +544,7 @@ export default function LandingPage() {
             </p>
             {/* Cost comparison pill */}
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '100px', overflow: 'hidden' }}>
-              {[['Trial','$2.00','rgba(0,212,255,0.7)'],['Scale','$1.00','#00ff41'],['Agency','$0.50','rgba(168,85,247,0.9)']].map(([label,price,color],i) => (
+              {[['Trial','$2.00','rgba(0,212,255,0.7)'],['Scale','$1.00','#00e5c8'],['Agency','$0.50','rgba(168,85,247,0.9)']].map(([label,price,color],i) => (
                 <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '8px 20px', borderRight: i < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none', background: 'rgba(255,255,255,0.02)' }}>
                   <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '9px', letterSpacing: '0.15em', color: 'rgba(224,224,224,0.35)', textTransform: 'uppercase' }}>{label}</span>
                   <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '14px', color: color as string }}>{price}</span>
@@ -583,7 +584,7 @@ export default function LandingPage() {
                     fontFamily: '"JetBrains Mono", monospace',
                     fontSize: '8px', fontWeight: 700, letterSpacing: '0.18em',
                     color: plan.highlight ? '#000' : plan.accent,
-                    background: plan.highlight ? plan.accent : `${plan.accentGlow}`,
+                    background: plan.highlight ? 'linear-gradient(135deg, #00b8d9, #00e5c8)' : `${plan.accentGlow}`,
                     border: plan.highlight ? 'none' : `1px solid ${plan.accentBorder}`,
                     padding: '4px 10px', borderRadius: '4px',
                   }}>
@@ -652,7 +653,7 @@ export default function LandingPage() {
                     padding: '13px', borderRadius: '8px',
                     textDecoration: 'none', transition: 'all 0.2s',
                     ...(plan.highlight
-                      ? { background: plan.accent, color: '#000', boxShadow: `0 0 25px ${plan.accentGlow}` }
+                      ? { background: 'linear-gradient(135deg, #00b8d9, #00e5c8)', color: '#000', boxShadow: '0 0 25px rgba(0,229,200,0.35)' }
                       : { background: 'transparent', color: plan.accent, border: `1px solid ${plan.accentBorder}` }
                     ),
                   }}
@@ -672,7 +673,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div style={{ textAlign: 'center', marginTop: '1.5rem', fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', color: 'rgba(0,255,65,0.25)', letterSpacing: '0.1em' }}>
+          <div style={{ textAlign: 'center', marginTop: '1.5rem', fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', color: 'rgba(0,229,200,0.25)', letterSpacing: '0.1em' }}>
             Payments via crypto · Contact @aidetectionkiller on Telegram
           </div>
         </div>
@@ -756,7 +757,7 @@ export default function LandingPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
               {[
                 { label: '100 accounts/mo', trial: '$200', scale: null, agency: null, saved: null, color: 'rgba(0,212,255,0.7)' },
-                { label: '500 accounts/mo', trial: '$1,000', scale: '$500', saved: '$500/mo', color: '#00ff41' },
+                { label: '500 accounts/mo', trial: '$1,000', scale: '$500', saved: '$500/mo', color: '#00e5c8' },
                 { label: '1000 accounts/mo', trial: '$2,000', scale: '$1,000', agency: '$500', saved: '$1,500/mo', color: 'rgba(168,85,247,0.9)' },
               ].map(row => (
                 <div key={row.label} style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.04)' }}>
@@ -782,12 +783,12 @@ export default function LandingPage() {
         {/* ── PRICING CTA ──────────────────────────────────────────── */}
         <div style={{ maxWidth: '1100px', margin: '4rem auto 0', paddingBottom: '7rem', position: 'relative' }}>
           {/* Glow */}
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '600px', height: '200px', background: 'radial-gradient(ellipse, rgba(0,255,65,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '600px', height: '200px', background: 'radial-gradient(ellipse, rgba(0,229,200,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-          <div style={{ padding: '3.5rem 3rem', border: '1px solid rgba(0,255,65,0.12)', borderRadius: '20px', background: 'rgba(0,255,65,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2rem', flexWrap: 'wrap', position: 'relative' }}>
+          <div style={{ padding: '3.5rem 3rem', border: '1px solid rgba(0,229,200,0.12)', borderRadius: '20px', background: 'rgba(0,229,200,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2rem', flexWrap: 'wrap', position: 'relative' }}>
             {/* Left copy */}
             <div>
-              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.2em', color: 'rgba(0,255,65,0.5)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.2em', color: 'rgba(0,229,200,0.5)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
                 Start today
               </div>
               <h3 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: 'clamp(1.5rem, 2.5vw, 2rem)', color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: '0.6rem' }}>
@@ -802,19 +803,19 @@ export default function LandingPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-end' }}>
               <Link href="/signup" style={{
                 display: 'inline-block', fontFamily: '"JetBrains Mono", monospace', fontWeight: 700,
-                fontSize: '12px', letterSpacing: '0.12em', color: '#000', background: '#00ff41',
+                fontSize: '12px', letterSpacing: '0.12em', color: '#000', background: 'linear-gradient(135deg, #00b8d9, #00e5c8)',
                 padding: '16px 42px', borderRadius: '8px', textDecoration: 'none',
-                boxShadow: '0 0 35px rgba(0,255,65,0.4)',
+                boxShadow: '0 0 35px rgba(0,229,200,0.4)',
                 transition: 'all 0.2s',
               }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 50px rgba(0,255,65,0.6)' }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 0 35px rgba(0,255,65,0.4)' }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 50px rgba(0,229,200,0.6)' }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 0 35px rgba(0,229,200,0.4)' }}
               >
                 START FREE TRIAL
               </Link>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00ff41', display: 'inline-block', animation: 'blink 1.5s ease-in-out infinite', boxShadow: '0 0 8px #00ff41' }} />
-                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(0,255,65,0.4)' }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00e5c8', display: 'inline-block', animation: 'blink 1.5s ease-in-out infinite', boxShadow: '0 0 8px #00e5c8' }} />
+                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(0,229,200,0.4)' }}>
                   ACCOUNTS CREATING NOW
                 </span>
               </div>
@@ -830,7 +831,7 @@ export default function LandingPage() {
           position: 'absolute', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
           width: '700px', height: '400px',
-          background: 'radial-gradient(ellipse, rgba(0,255,65,0.07) 0%, transparent 65%)',
+          background: 'radial-gradient(ellipse, rgba(0,229,200,0.07) 0%, transparent 65%)',
           pointerEvents: 'none',
         }} />
 
@@ -838,19 +839,19 @@ export default function LandingPage() {
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: '8px',
             padding: '6px 14px', marginBottom: '2.5rem',
-            border: '1px solid rgba(0,255,65,0.2)',
-            background: 'rgba(0,255,65,0.04)',
+            border: '1px solid rgba(0,229,200,0.2)',
+            background: 'rgba(0,229,200,0.04)',
             borderRadius: '100px',
           }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00ff41', display: 'inline-block', animation: 'blink 1.5s ease-in-out infinite' }} />
-            <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.18em', color: '#00ff41' }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00e5c8', display: 'inline-block', animation: 'blink 1.5s ease-in-out infinite' }} />
+            <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '10px', letterSpacing: '0.18em', color: '#00e5c8' }}>
               ACCEPTING NEW OPERATORS
             </span>
           </div>
 
           <h2 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: 'clamp(2.5rem, 6vw, 5rem)', color: '#fff', letterSpacing: '-0.04em', lineHeight: 1.0, marginBottom: '1.5rem' }}>
             Ready to automate<br />
-            <span style={{ color: '#00ff41', textShadow: '0 0 50px rgba(0,255,65,0.3)' }}>
+            <span style={{ background: 'linear-gradient(135deg, #00b8d9, #00e5c8, #00f5d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', filter: 'drop-shadow(0 0 30px rgba(0,229,200,0.4))' }}>
               at scale?
             </span>
           </h2>
@@ -863,14 +864,14 @@ export default function LandingPage() {
             display: 'inline-block',
             fontFamily: '"JetBrains Mono", monospace', fontWeight: 700,
             fontSize: '13px', letterSpacing: '0.15em',
-            color: '#000', background: '#00ff41',
+            color: '#000', background: 'linear-gradient(135deg, #00b8d9, #00e5c8)',
             padding: '18px 52px', borderRadius: '8px',
             textDecoration: 'none',
-            boxShadow: '0 0 40px rgba(0,255,65,0.4), 0 0 80px rgba(0,255,65,0.15)',
+            boxShadow: '0 0 40px rgba(0,229,200,0.4), 0 0 80px rgba(0,229,200,0.15)',
             transition: 'all 0.25s',
           }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 60px rgba(0,255,65,0.6), 0 0 100px rgba(0,255,65,0.2)' }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 0 40px rgba(0,255,65,0.4), 0 0 80px rgba(0,255,65,0.15)' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 60px rgba(0,229,200,0.6), 0 0 100px rgba(0,229,200,0.2)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 0 40px rgba(0,229,200,0.4), 0 0 80px rgba(0,229,200,0.15)' }}
           >
             CREATE FREE ACCOUNT
           </Link>
@@ -885,8 +886,8 @@ export default function LandingPage() {
         position: 'relative', zIndex: 10,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: 22, height: 22, border: '1px solid rgba(0,255,65,0.4)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#00ff41" strokeWidth="2.5">
+          <div style={{ width: 22, height: 22, border: '1px solid rgba(0,229,200,0.4)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#00e5c8" strokeWidth="2.5">
               <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
             </svg>
           </div>

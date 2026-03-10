@@ -141,14 +141,14 @@ export default function CreateJobPage() {
               to top up your credits via crypto.
             </p>
             <p className="mt-1 text-xs text-[rgba(224,224,224,0.4)]">1 credit = $1 = 1 account</p>
-            <div className="mt-6 space-y-2 text-xs font-mono text-[rgba(0,255,65,0.5)]">
+            <div className="mt-6 space-y-2 text-xs font-mono text-[rgba(0,229,200,0.5)]">
               <div>Trial (first time): $2/account · max 10 accounts</div>
               <div>No-plan: $5/account</div>
               <div>Monthly plan: $250/month, tiered per-account pricing</div>
             </div>
           </div>
           <div>
-            <div className="mb-3 font-mono text-xs tracking-widest text-[rgba(0,255,65,0.5)] uppercase">Demo Preview</div>
+            <div className="mb-3 font-mono text-xs tracking-widest text-[rgba(0,229,200,0.5)] uppercase">Demo Preview</div>
             <SimulationPanel />
           </div>
         </div>
@@ -159,8 +159,8 @@ export default function CreateJobPage() {
   return (
     <div className="p-8">
       <h1 className="mb-2 font-mono text-2xl font-bold text-white">New Automation Job</h1>
-      <p className="mb-8 font-mono text-xs text-[rgba(0,255,65,0.4)]">
-        Available credits: <span className="text-[#00ff41]">{credits ?? '…'}</span>
+      <p className="mb-8 font-mono text-xs text-[rgba(0,229,200,0.4)]">
+        Available credits: <span className="text-[#00e5c8]">{credits ?? '…'}</span>
       </p>
 
       {error && (
@@ -175,12 +175,12 @@ export default function CreateJobPage() {
           <div className="space-y-6">
             {/* Account count */}
             <div className="glass-card rounded-xl p-6">
-              <h2 className="mb-4 font-mono text-xs font-bold tracking-widest text-[rgba(0,255,65,0.6)] uppercase">
+              <h2 className="mb-4 font-mono text-xs font-bold tracking-widest text-[rgba(0,229,200,0.6)] uppercase">
                 Job Configuration
               </h2>
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,255,65,0.5)] uppercase">
+                  <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,229,200,0.5)] uppercase">
                     Number of Accounts
                   </label>
                   <input
@@ -192,13 +192,13 @@ export default function CreateJobPage() {
                     className="matrix-input"
                     required
                   />
-                  <p className="mt-1 font-mono text-[10px] text-[rgba(0,255,65,0.3)]">
+                  <p className="mt-1 font-mono text-[10px] text-[rgba(0,229,200,0.3)]">
                     Cost: {form.accounts_count} credit{form.accounts_count !== 1 ? 's' : ''} · charged on success only
                   </p>
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,255,65,0.5)] uppercase">
+                  <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,229,200,0.5)] uppercase">
                     Geelark API Key
                   </label>
                   <input
@@ -215,12 +215,12 @@ export default function CreateJobPage() {
 
             {/* Profile */}
             <div className="glass-card rounded-xl p-6">
-              <h2 className="mb-4 font-mono text-xs font-bold tracking-widest text-[rgba(0,255,65,0.6)] uppercase">
+              <h2 className="mb-4 font-mono text-xs font-bold tracking-widest text-[rgba(0,229,200,0.6)] uppercase">
                 Profile Details
               </h2>
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,255,65,0.5)] uppercase">
+                  <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,229,200,0.5)] uppercase">
                     Profile Name
                   </label>
                   <input
@@ -233,7 +233,7 @@ export default function CreateJobPage() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,255,65,0.5)] uppercase">
+                  <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,229,200,0.5)] uppercase">
                     Profile Bio
                   </label>
                   <textarea
@@ -246,7 +246,7 @@ export default function CreateJobPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,255,65,0.5)] uppercase">
+                    <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,229,200,0.5)] uppercase">
                       Age Min
                     </label>
                     <input
@@ -259,7 +259,7 @@ export default function CreateJobPage() {
                     />
                   </div>
                   <div>
-                    <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,255,65,0.5)] uppercase">
+                    <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,229,200,0.5)] uppercase">
                       Age Max
                     </label>
                     <input
@@ -273,7 +273,7 @@ export default function CreateJobPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,255,65,0.5)] uppercase">
+                  <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,229,200,0.5)] uppercase">
                     Target City
                   </label>
                   <input
@@ -292,7 +292,7 @@ export default function CreateJobPage() {
           {/* Right column — Photos */}
           <div className="space-y-6">
             <div className="glass-card rounded-xl p-6">
-              <h2 className="mb-4 font-mono text-xs font-bold tracking-widest text-[rgba(0,255,65,0.6)] uppercase">
+              <h2 className="mb-4 font-mono text-xs font-bold tracking-widest text-[rgba(0,229,200,0.6)] uppercase">
                 Profile Photos ({photos.length}/{MAX_PHOTOS})
               </h2>
 
@@ -301,16 +301,16 @@ export default function CreateJobPage() {
                   {...getRootProps()}
                   className={`mb-4 cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-all ${
                     isDragActive
-                      ? 'border-[#00ff41] bg-[rgba(0,255,65,0.06)]'
-                      : 'border-[rgba(0,255,65,0.2)] hover:border-[rgba(0,255,65,0.4)] hover:bg-[rgba(0,255,65,0.02)]'
+                      ? 'border-[#00e5c8] bg-[rgba(0,229,200,0.06)]'
+                      : 'border-[rgba(0,229,200,0.2)] hover:border-[rgba(0,229,200,0.4)] hover:bg-[rgba(0,229,200,0.02)]'
                   }`}
                 >
                   <input {...getInputProps()} />
-                  <Upload size={24} className="mx-auto mb-2 text-[rgba(0,255,65,0.4)]" />
-                  <p className="font-mono text-xs text-[rgba(0,255,65,0.5)]">
+                  <Upload size={24} className="mx-auto mb-2 text-[rgba(0,229,200,0.4)]" />
+                  <p className="font-mono text-xs text-[rgba(0,229,200,0.5)]">
                     {isDragActive ? 'Drop photos here' : 'Drag & drop or click to upload'}
                   </p>
-                  <p className="mt-1 font-mono text-[10px] text-[rgba(0,255,65,0.3)]">
+                  <p className="mt-1 font-mono text-[10px] text-[rgba(0,229,200,0.3)]">
                     JPG, PNG — max {MAX_PHOTOS} photos
                   </p>
                 </div>
@@ -318,7 +318,7 @@ export default function CreateJobPage() {
 
               <div className="grid grid-cols-3 gap-3">
                 {photoPreviews.map((src, i) => (
-                  <div key={i} className="group relative aspect-square overflow-hidden rounded-lg border border-[rgba(0,255,65,0.15)]">
+                  <div key={i} className="group relative aspect-square overflow-hidden rounded-lg border border-[rgba(0,229,200,0.15)]">
                     <img src={src} alt="" className="h-full w-full object-cover" />
                     <button
                       type="button"
@@ -328,7 +328,7 @@ export default function CreateJobPage() {
                       <X size={12} />
                     </button>
                     {i === 0 && (
-                      <div className="absolute bottom-1 left-1 rounded bg-[rgba(0,0,0,0.7)] px-1.5 py-0.5 font-mono text-[9px] text-[#00ff41]">
+                      <div className="absolute bottom-1 left-1 rounded bg-[rgba(0,0,0,0.7)] px-1.5 py-0.5 font-mono text-[9px] text-[#00e5c8]">
                         MAIN
                       </div>
                     )}

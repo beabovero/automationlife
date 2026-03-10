@@ -50,7 +50,7 @@ export default function SettingsPage() {
           )}
 
           {saved && (
-            <div className="mb-4 flex items-center gap-2 rounded border border-[rgba(0,255,65,0.3)] bg-[rgba(0,255,65,0.06)] px-4 py-3 font-mono text-xs text-[#00ff41]">
+            <div className="mb-4 flex items-center gap-2 rounded border border-[rgba(0,229,200,0.3)] bg-[rgba(0,229,200,0.06)] px-4 py-3 font-mono text-xs text-[#00e5c8]">
               <CheckCircle2 size={14} />
               Settings saved
             </div>
@@ -58,7 +58,7 @@ export default function SettingsPage() {
 
           <form onSubmit={handleSave} className="space-y-4">
             <div>
-              <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,255,65,0.5)] uppercase">
+              <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,229,200,0.5)] uppercase">
                 Geelark API Key
               </label>
               <input
@@ -80,7 +80,7 @@ export default function SettingsPage() {
           <h2 className="mb-1 font-mono text-sm font-bold text-white">Support & Payments</h2>
           <p className="text-xs text-[rgba(224,224,224,0.5)]">
             For credits, billing questions, or support — contact{' '}
-            <span className="text-[#00ff41]">@aidetectionkiller</span> on Telegram.
+            <span className="text-[#00e5c8]">@aidetectionkiller</span> on Telegram.
             Payments are processed via crypto.
           </p>
         </div>

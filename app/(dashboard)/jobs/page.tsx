@@ -36,12 +36,12 @@ export default async function JobsPage() {
           </Link>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-[rgba(0,255,65,0.1)]">
+        <div className="overflow-hidden rounded-xl border border-[rgba(0,229,200,0.1)]">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[rgba(0,255,65,0.1)] bg-[rgba(0,255,65,0.03)]">
+              <tr className="border-b border-[rgba(0,229,200,0.1)] bg-[rgba(0,229,200,0.03)]">
                 {['Job ID', 'Status', 'Accounts', 'Progress', 'Credits', 'Created', ''].map(h => (
-                  <th key={h} className="px-4 py-3 text-left font-mono text-[10px] tracking-widest text-[rgba(0,255,65,0.5)] uppercase">
+                  <th key={h} className="px-4 py-3 text-left font-mono text-[10px] tracking-widest text-[rgba(0,229,200,0.5)] uppercase">
                     {h}
                   </th>
                 ))}
@@ -53,7 +53,7 @@ export default async function JobsPage() {
                 return (
                   <tr
                     key={job.id}
-                    className={`border-b border-[rgba(0,255,65,0.06)] transition-colors hover:bg-[rgba(0,255,65,0.02)] ${i % 2 !== 0 ? 'bg-[rgba(0,0,0,0.2)]' : ''}`}
+                    className={`border-b border-[rgba(0,229,200,0.06)] transition-colors hover:bg-[rgba(0,229,200,0.02)] ${i % 2 !== 0 ? 'bg-[rgba(0,0,0,0.2)]' : ''}`}
                   >
                     <td className="px-4 py-3 font-mono text-xs text-[rgba(224,224,224,0.6)]">
                       {job.id.slice(0, 8)}…
@@ -64,8 +64,8 @@ export default async function JobsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-20 rounded-full bg-[rgba(0,255,65,0.1)]">
-                          <div className="h-full rounded-full bg-[#00ff41] transition-all" style={{ width: `${pct}%` }} />
+                        <div className="h-1.5 w-20 rounded-full bg-[rgba(0,229,200,0.1)]">
+                          <div className="h-full rounded-full bg-[#00e5c8] transition-all" style={{ width: `${pct}%` }} />
                         </div>
                         <span className="font-mono text-xs text-[rgba(224,224,224,0.4)]">
                           {job.completed_accounts}/{job.total_accounts}
@@ -75,7 +75,7 @@ export default async function JobsPage() {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs text-[#00ff41]">{job.credits_charged}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-[#00e5c8]">{job.credits_charged}</td>
                     <td className="px-4 py-3 font-mono text-xs text-[rgba(224,224,224,0.4)]">
                       {new Date(job.created_at).toLocaleDateString()}
                     </td>

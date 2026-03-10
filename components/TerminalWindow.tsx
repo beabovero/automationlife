@@ -29,8 +29,8 @@ const SEQUENCE = [
 const COLORS: Record<string, string> = {
   cmd:     '#e0e0e0',
   info:    'rgba(0,212,255,0.8)',
-  success: '#00ff41',
-  divider: 'rgba(0,255,65,0.15)',
+  success: '#00e5c8',
+  divider: 'rgba(0,229,200,0.15)',
   stat:    'rgba(168,85,247,0.9)',
 }
 
@@ -56,10 +56,10 @@ export default function TerminalWindow() {
   return (
     <div style={{
       background: 'rgba(0,0,0,0.85)',
-      border: '1px solid rgba(0,255,65,0.2)',
+      border: '1px solid rgba(0,229,200,0.2)',
       borderRadius: '12px',
       overflow: 'hidden',
-      boxShadow: '0 0 0 1px rgba(0,255,65,0.05), 0 40px 80px rgba(0,0,0,0.8), 0 0 60px rgba(0,255,65,0.05)',
+      boxShadow: '0 0 0 1px rgba(0,229,200,0.05), 0 40px 80px rgba(0,0,0,0.8), 0 0 60px rgba(0,229,200,0.05)',
       backdropFilter: 'blur(20px)',
       fontFamily: '"JetBrains Mono", monospace',
     }}>
@@ -67,8 +67,8 @@ export default function TerminalWindow() {
       <div style={{
         display: 'flex', alignItems: 'center', gap: '8px',
         padding: '12px 16px',
-        borderBottom: '1px solid rgba(0,255,65,0.1)',
-        background: 'rgba(0,255,65,0.03)',
+        borderBottom: '1px solid rgba(0,229,200,0.1)',
+        background: 'rgba(0,229,200,0.03)',
       }}>
         <div style={{ display: 'flex', gap: '6px' }}>
           {['#ff5f57','#febc2e','#28c840'].map(c => (
@@ -83,9 +83,9 @@ export default function TerminalWindow() {
       {/* Terminal body */}
       <div style={{ padding: '20px', minHeight: '340px', maxHeight: '340px', overflowY: 'hidden' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-          <span style={{ fontSize: '10px', color: 'rgba(0,255,65,0.4)', letterSpacing: '0.15em' }}>OPERATOR@VA-NIGHTMARE</span>
-          <span style={{ fontSize: '10px', color: 'rgba(0,255,65,0.2)' }}>~</span>
-          <span style={{ width: '6px', height: '13px', background: '#00ff41', display: 'inline-block', animation: 'blink 1s step-end infinite' }} />
+          <span style={{ fontSize: '10px', color: 'rgba(0,229,200,0.4)', letterSpacing: '0.15em' }}>OPERATOR@VA-NIGHTMARE</span>
+          <span style={{ fontSize: '10px', color: 'rgba(0,229,200,0.2)' }}>~</span>
+          <span style={{ width: '6px', height: '13px', background: '#00e5c8', display: 'inline-block', animation: 'blink 1s step-end infinite' }} />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -97,14 +97,17 @@ export default function TerminalWindow() {
             return (
               <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', animation: 'slide-up 0.2s ease forwards' }}>
                 {item.type === 'cmd' && (
-                  <span style={{ color: 'rgba(0,255,65,0.5)', fontSize: '12px', userSelect: 'none', flexShrink: 0 }}>❯</span>
+                  <span style={{ color: 'rgba(0,229,200,0.5)', fontSize: '12px', userSelect: 'none', flexShrink: 0 }}>❯</span>
                 )}
                 <span style={{
                   fontSize: '12px',
-                  color: COLORS[item.type] || '#e0e0e0',
                   letterSpacing: item.type === 'cmd' ? '0.02em' : '0',
                   fontWeight: item.type === 'success' ? '600' : '400',
                   paddingLeft: item.type !== 'cmd' ? '16px' : '0',
+                  ...(item.type === 'success'
+                    ? { background: 'linear-gradient(135deg, #00b8d9, #00e5c8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }
+                    : { color: COLORS[item.type] || '#e0e0e0' }
+                  ),
                 }}>
                   {item.text}
                 </span>

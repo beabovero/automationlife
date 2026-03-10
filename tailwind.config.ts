@@ -9,8 +9,8 @@ const config: Config = {
     extend: {
       colors: {
         matrix: {
-          green:   '#00ff41',
-          dim:     '#00cc33',
+          green:   '#00e5c8',
+          dim:     '#00c4aa',
           dark:    '#003b00',
           glow:    '#00ffaa',
           cyan:    '#00d4ff',
@@ -18,7 +18,7 @@ const config: Config = {
           bg:      '#000000',
           surface: '#050505',
           card:    '#0a0a0a',
-          border:  'rgba(0,255,65,0.15)',
+          border:  'rgba(0,229,200,0.15)',
         },
       },
       fontFamily: {
@@ -53,8 +53,8 @@ const config: Config = {
           '20%': { clipPath: 'inset(0 0 100% 0)', transform: 'translate(0)' },
         },
         'pulse-green': {
-          '0%,100%': { boxShadow: '0 0 5px #00ff41, 0 0 10px rgba(0,255,65,0.3)' },
-          '50%':     { boxShadow: '0 0 20px #00ff41, 0 0 40px rgba(0,255,65,0.5), 0 0 60px rgba(0,255,65,0.2)' },
+          '0%,100%': { boxShadow: '0 0 5px #00e5c8, 0 0 10px rgba(0,229,200,0.3)' },
+          '50%':     { boxShadow: '0 0 20px #00e5c8, 0 0 40px rgba(0,229,200,0.5), 0 0 60px rgba(0,229,200,0.2)' },
         },
         'pulse-cyan': {
           '0%,100%': { boxShadow: '0 0 5px #00d4ff, 0 0 10px rgba(0,212,255,0.3)' },
@@ -86,8 +86,8 @@ const config: Config = {
           '100%': { opacity: '1', transform: 'translateX(0)' },
         },
         'glow-pulse': {
-          '0%,100%': { textShadow: '0 0 10px #00ff41, 0 0 20px rgba(0,255,65,0.5)' },
-          '50%':     { textShadow: '0 0 20px #00ff41, 0 0 40px #00ff41, 0 0 60px rgba(0,255,65,0.3)' },
+          '0%,100%': { textShadow: '0 0 10px #00e5c8, 0 0 20px rgba(0,229,200,0.5)' },
+          '50%':     { textShadow: '0 0 20px #00e5c8, 0 0 40px #00e5c8, 0 0 60px rgba(0,229,200,0.3)' },
         },
         float: {
           '0%,100%': { transform: 'translateY(0)' },
@@ -95,8 +95,8 @@ const config: Config = {
         },
       },
       backgroundImage: {
-        'grid-matrix': `linear-gradient(rgba(0,255,65,0.03) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(0,255,65,0.03) 1px, transparent 1px)`,
+        'grid-matrix': `linear-gradient(rgba(0,229,200,0.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0,229,200,0.03) 1px, transparent 1px)`,
       },
       backgroundSize: {
         'grid-matrix': '40px 40px',

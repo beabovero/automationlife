@@ -80,7 +80,7 @@ export default function AdminPanel({ users }: { users: UserSettings[] }) {
             </div>
           )}
           {success && (
-            <div className="mb-4 flex items-center gap-2 rounded border border-[rgba(0,255,65,0.3)] bg-[rgba(0,255,65,0.06)] px-4 py-3 font-mono text-xs text-[#00ff41]">
+            <div className="mb-4 flex items-center gap-2 rounded border border-[rgba(0,229,200,0.3)] bg-[rgba(0,229,200,0.06)] px-4 py-3 font-mono text-xs text-[#00e5c8]">
               <CheckCircle2 size={14} />
               {success}
             </div>
@@ -158,7 +158,7 @@ export default function AdminPanel({ users }: { users: UserSettings[] }) {
                     }`}
                   >
                     <td className="px-3 py-3 font-mono text-xs text-[rgba(224,224,224,0.6)]">{u.user_id.slice(0, 12)}…</td>
-                    <td className="px-3 py-3 font-mono text-xs text-[#00ff41] font-bold">{u.credits}</td>
+                    <td className="px-3 py-3 font-mono text-xs text-[#00e5c8] font-bold">{u.credits}</td>
                     <td className="px-3 py-3 font-mono text-xs text-[rgba(224,224,224,0.4)]">{u.total_accounts_created}</td>
                     <td className="px-3 py-3 font-mono text-xs text-[#a855f7]">{u.plan ?? '—'}</td>
                   </tr>

@@ -35,7 +35,7 @@ function AccountRow({ account }: { account: Account }) {
     <>
       <tr
         onClick={toggle}
-        className="cursor-pointer border-b border-[rgba(0,255,65,0.06)] transition-colors hover:bg-[rgba(0,255,65,0.02)]"
+        className="cursor-pointer border-b border-[rgba(0,229,200,0.06)] transition-colors hover:bg-[rgba(0,229,200,0.02)]"
       >
         <td className="px-4 py-3 font-mono text-xs text-[rgba(224,224,224,0.6)]">{account.id.slice(0, 8)}…</td>
         <td className="px-4 py-3"><StatusBadge status={account.status} /></td>
@@ -43,13 +43,13 @@ function AccountRow({ account }: { account: Account }) {
           S{account.stage_reached ?? 0} · {account.current_checkpoint ?? '—'}
         </td>
         <td className="px-4 py-3 font-mono text-xs text-[rgba(224,224,224,0.4)]">{account.retry_count}</td>
-        <td className="px-4 py-3 font-mono text-xs text-[#00ff41]">{account.credits_charged}</td>
+        <td className="px-4 py-3 font-mono text-xs text-[#00e5c8]">{account.credits_charged}</td>
         <td className="px-4 py-3 font-mono text-xs text-[rgba(0,212,255,0.7)]">
           {expanded ? '▼' : '▶'}
         </td>
       </tr>
       {expanded && (
-        <tr className="border-b border-[rgba(0,255,65,0.06)] bg-[rgba(0,0,0,0.3)]">
+        <tr className="border-b border-[rgba(0,229,200,0.06)] bg-[rgba(0,0,0,0.3)]">
           <td colSpan={6} className="px-6 py-4">
             {account.error_message && (
               <div className="mb-3 rounded border border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.04)] px-3 py-2 font-mono text-xs text-red-400">
@@ -62,7 +62,7 @@ function AccountRow({ account }: { account: Account }) {
               <div className="space-y-1 max-h-48 overflow-y-auto">
                 {events.map(ev => (
                   <div key={ev.id} className="flex items-start gap-3 font-mono text-xs">
-                    <span className="text-[rgba(0,255,65,0.3)] shrink-0">
+                    <span className="text-[rgba(0,229,200,0.3)] shrink-0">
                       {new Date(ev.created_at).toLocaleTimeString()}
                     </span>
                     <span className="text-[rgba(0,212,255,0.6)] shrink-0">S{ev.stage}·{ev.checkpoint}</span>
@@ -113,7 +113,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center p-8">
-        <RefreshCw size={20} className="animate-spin text-[#00ff41]" />
+        <RefreshCw size={20} className="animate-spin text-[#00e5c8]" />
       </div>
     )
   }
@@ -132,7 +132,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         </Link>
         <div>
           <h1 className="font-mono text-xl font-bold text-white">Job {job.id.slice(0, 8)}…</h1>
-          <p className="font-mono text-xs text-[rgba(0,255,65,0.4)]">
+          <p className="font-mono text-xs text-[rgba(0,229,200,0.4)]">
             Created {new Date(job.created_at).toLocaleString()}
           </p>
         </div>
@@ -145,9 +145,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       <div className="mb-8 grid gap-4 sm:grid-cols-4">
         {[
           ['Total',     job.total_accounts,     '#e0e0e0'],
-          ['Completed', job.completed_accounts,  '#00ff41'],
+          ['Completed', job.completed_accounts,  '#00e5c8'],
           ['Failed',    job.failed_accounts,     '#ef4444'],
-          ['Credits',   job.credits_charged,     '#00ff41'],
+          ['Credits',   job.credits_charged,     '#00e5c8'],
         ].map(([label, val, color]) => (
           <div key={label as string} className="glass-card rounded-xl p-4">
             <div className="font-mono text-2xl font-black" style={{ color: color as string }}>{val}</div>
@@ -158,13 +158,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
       {/* Progress bar */}
       <div className="mb-8">
-        <div className="mb-2 flex justify-between font-mono text-xs text-[rgba(0,255,65,0.5)]">
+        <div className="mb-2 flex justify-between font-mono text-xs text-[rgba(0,229,200,0.5)]">
           <span>Progress</span>
           <span>{pct.toFixed(0)}%</span>
         </div>
-        <div className="h-2 rounded-full bg-[rgba(0,255,65,0.1)]">
+        <div className="h-2 rounded-full bg-[rgba(0,229,200,0.1)]">
           <div
-            className="h-full rounded-full bg-[#00ff41] transition-all duration-500"
+            className="h-full rounded-full bg-[#00e5c8] transition-all duration-500"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -178,7 +178,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       )}
 
       {/* Accounts table */}
-      <h2 className="mb-4 font-mono text-xs font-bold tracking-widest text-[rgba(0,255,65,0.6)] uppercase">
+      <h2 className="mb-4 font-mono text-xs font-bold tracking-widest text-[rgba(0,229,200,0.6)] uppercase">
         Accounts ({accounts.length})
       </h2>
       {accounts.length === 0 ? (
@@ -186,12 +186,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           {job.status === 'queued' ? 'Waiting for worker to pick up job…' : 'No accounts yet'}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-[rgba(0,255,65,0.1)]">
+        <div className="overflow-hidden rounded-xl border border-[rgba(0,229,200,0.1)]">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[rgba(0,255,65,0.1)] bg-[rgba(0,255,65,0.03)]">
+              <tr className="border-b border-[rgba(0,229,200,0.1)] bg-[rgba(0,229,200,0.03)]">
                 {['Account', 'Status', 'Stage', 'Retries', 'Credits', ''].map(h => (
-                  <th key={h} className="px-4 py-3 text-left font-mono text-[10px] tracking-widest text-[rgba(0,255,65,0.5)] uppercase">
+                  <th key={h} className="px-4 py-3 text-left font-mono text-[10px] tracking-widest text-[rgba(0,229,200,0.5)] uppercase">
                     {h}
                   </th>
                 ))}
