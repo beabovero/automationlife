@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
   LayoutDashboard, PlusCircle, List, Settings, CreditCard,
-  Shield, LogOut, Zap,
+  LogOut, Zap,
 } from 'lucide-react'
 
 const NAV = [
@@ -20,7 +20,7 @@ interface Props {
   isAdmin: boolean
 }
 
-export default function Sidebar({ credits, isAdmin }: Props) {
+export default function Sidebar({ credits, isAdmin: _isAdmin }: Props) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -30,7 +30,7 @@ export default function Sidebar({ credits, isAdmin }: Props) {
     router.push('/login')
   }
 
-  const nav = isAdmin ? [...NAV, { href: '/admin', label: 'Admin', icon: Shield }] : NAV
+  const nav = NAV
 
   return (
     <aside
