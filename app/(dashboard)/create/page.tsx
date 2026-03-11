@@ -10,7 +10,7 @@ import {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const MAX_PHOTOS = 6
+const MAX_PHOTOS = 4
 const TRIAL_MAX = 10
 const CREDITS_PER_ACCOUNT = 2
 
@@ -100,40 +100,78 @@ function PhotoUploader({ account, onChange }: {
   }
 
   return (
-    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-      {account.photos.length < MAX_PHOTOS && (
-        <div
-          {...getRootProps()}
-          style={{
-            width: 64, height: 64, borderRadius: 8, cursor: 'pointer',
-            border: `2px dashed ${isDragActive ? '#00e5c8' : 'rgba(0,229,200,0.25)'}`,
-            background: isDragActive ? 'rgba(0,229,200,0.06)' : 'rgba(0,0,0,0.3)',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
-            transition: 'all 0.15s', flexShrink: 0,
-          }}
-        >
-          <input {...getInputProps()} />
-          <Upload size={14} style={{ color: 'rgba(0,229,200,0.4)' }} />
-          <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 7, color: 'rgba(0,229,200,0.35)' }}>ADD</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
+      {/* Slots row */}
+      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+        {/* Filled photo slots */}
+        {account.photoPreviews.map((src, i) => (
+          <div key={i} style={{ position: 'relative', width: 90, height: 90, borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(0,229,200,0.3)', flexShrink: 0, boxShadow: '0 0 12px rgba(0,229,200,0.1)' }}>
+            <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <button
+              type="button" onClick={() => remove(i)}
+              style={{ position: 'absolute', top: 4, right: 4, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,0.9)', border: '1px solid rgba(239,68,68,0.4)', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <X size={10} />
+            </button>
+            {i === 0 && (
+              <div style={{ position: 'absolute', bottom: 4, left: 4, background: 'rgba(0,0,0,0.85)', padding: '2px 6px', borderRadius: 3, fontFamily: '"JetBrains Mono", monospace', fontSize: 8, color: '#00e5c8', letterSpacing: '0.06em' }}>
+                MAIN
+              </div>
+            )}
+            <div style={{ position: 'absolute', bottom: 4, right: 4, background: 'rgba(0,0,0,0.75)', padding: '1px 5px', borderRadius: 3, fontFamily: '"JetBrains Mono", monospace', fontSize: 8, color: 'rgba(224,224,224,0.6)' }}>
+              {i + 1}
+            </div>
+          </div>
+        ))}
+
+        {/* Empty slots */}
+        {Array.from({ length: MAX_PHOTOS - account.photos.length }).map((_, i) => {
+          const slotIndex = account.photos.length + i
+          const isDropZone = i === 0 && account.photos.length < MAX_PHOTOS
+          return isDropZone ? (
+            <div
+              key={`empty-${i}`}
+              {...getRootProps()}
+              style={{
+                width: 90, height: 90, borderRadius: 10, cursor: 'pointer', flexShrink: 0,
+                border: `2px dashed ${isDragActive ? '#00e5c8' : 'rgba(0,229,200,0.3)'}`,
+                background: isDragActive ? 'rgba(0,229,200,0.08)' : 'rgba(0,229,200,0.02)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
+                transition: 'all 0.15s',
+                boxShadow: isDragActive ? '0 0 16px rgba(0,229,200,0.2)' : 'none',
+              }}
+            >
+              <input {...getInputProps()} />
+              <Upload size={20} style={{ color: isDragActive ? '#00e5c8' : 'rgba(0,229,200,0.45)' }} />
+              <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: isDragActive ? '#00e5c8' : 'rgba(0,229,200,0.4)', letterSpacing: '0.1em' }}>
+                {isDragActive ? 'DROP' : 'ADD'}
+              </span>
+            </div>
+          ) : (
+            <div
+              key={`empty-${i}`}
+              style={{ width: 90, height: 90, borderRadius: 10, border: '1px dashed rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+            >
+              <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.1)' }}>{slotIndex + 1}</span>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Status line */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {Array.from({ length: MAX_PHOTOS }).map((_, i) => (
+            <div key={i} style={{ width: 18, height: 3, borderRadius: 2, background: i < account.photos.length ? '#00e5c8' : 'rgba(255,255,255,0.07)' }} />
+          ))}
         </div>
-      )}
-      {account.photoPreviews.map((src, i) => (
-        <div key={i} style={{ position: 'relative', width: 64, height: 64, borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(0,229,200,0.2)', flexShrink: 0 }}>
-          <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          <button
-            type="button" onClick={() => remove(i)}
-            style={{ position: 'absolute', top: 2, right: 2, width: 16, height: 16, borderRadius: '50%', background: 'rgba(0,0,0,0.85)', border: 'none', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            <X size={8} />
-          </button>
-          {i === 0 && <div style={{ position: 'absolute', bottom: 2, left: 2, background: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: 2, fontFamily: '"JetBrains Mono", monospace', fontSize: 6, color: '#00e5c8' }}>MAIN</div>}
-        </div>
-      ))}
-      {account.photos.length === 0 && (
-        <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(239,68,68,0.5)', alignSelf: 'center' }}>
-          At least 1 photo required
+        <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: account.photos.length > 0 ? 'rgba(0,229,200,0.5)' : 'rgba(239,68,68,0.5)' }}>
+          {account.photos.length === 0
+            ? '⚠ At least 1 photo required'
+            : `${account.photos.length}/${MAX_PHOTOS} photos · ${MAX_PHOTOS - account.photos.length > 0 ? `${MAX_PHOTOS - account.photos.length} slot${MAX_PHOTOS - account.photos.length > 1 ? 's' : ''} remaining` : 'all slots filled'}`
+          }
         </span>
-      )}
+      </div>
     </div>
   )
 }
@@ -304,23 +342,41 @@ function AccountRow({
         </td>
 
         {/* Photos */}
-        <td style={{ ...CELL, width: 80, textAlign: 'center' }}>
+        <td style={{ ...CELL, width: 110, padding: '8px 8px' }}>
           <button
             type="button"
             onClick={() => onChange({ expanded: !account.expanded })}
             style={{
-              background: account.photos.length > 0 ? 'rgba(0,229,200,0.08)' : 'rgba(239,68,68,0.06)',
-              border: account.photos.length > 0 ? '1px solid rgba(0,229,200,0.2)' : '1px solid rgba(239,68,68,0.15)',
-              borderRadius: 6, padding: '5px 8px', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 5, margin: '0 auto',
+              width: '100%',
+              background: account.photos.length === MAX_PHOTOS
+                ? 'rgba(0,229,200,0.1)'
+                : account.photos.length > 0
+                  ? 'rgba(0,229,200,0.05)'
+                  : 'rgba(239,68,68,0.07)',
+              border: account.photos.length > 0
+                ? `1px solid ${account.photos.length === MAX_PHOTOS ? 'rgba(0,229,200,0.4)' : 'rgba(0,229,200,0.2)'}`
+                : '1px solid rgba(239,68,68,0.25)',
+              borderRadius: 8, padding: '8px 10px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6,
             }}
           >
-            <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: account.photos.length > 0 ? '#00e5c8' : 'rgba(239,68,68,0.6)', fontWeight: 700 }}>
-              {account.photos.length}/{MAX_PHOTOS}
-            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
+              <div style={{ display: 'flex', gap: 3 }}>
+                {Array.from({ length: MAX_PHOTOS }).map((_, i) => (
+                  <div key={i} style={{ width: 14, height: 14, borderRadius: 3, background: i < account.photos.length ? '#00e5c8' : 'rgba(255,255,255,0.08)', border: i < account.photos.length ? 'none' : '1px dashed rgba(255,255,255,0.1)', overflow: 'hidden', position: 'relative' }}>
+                    {i < account.photoPreviews.length && (
+                      <img src={account.photoPreviews[i]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 8, color: account.photos.length > 0 ? 'rgba(0,229,200,0.6)' : 'rgba(239,68,68,0.5)', letterSpacing: '0.04em' }}>
+                {account.photos.length === 0 ? 'required' : `${account.photos.length}/${MAX_PHOTOS} photos`}
+              </span>
+            </div>
             {account.expanded
-              ? <ChevronDown size={9} style={{ color: 'rgba(0,229,200,0.5)' }} />
-              : <ChevronRight size={9} style={{ color: 'rgba(0,229,200,0.3)' }} />
+              ? <ChevronDown size={11} style={{ color: 'rgba(0,229,200,0.5)', flexShrink: 0 }} />
+              : <Upload size={11} style={{ color: account.photos.length > 0 ? 'rgba(0,229,200,0.4)' : 'rgba(239,68,68,0.4)', flexShrink: 0 }} />
             }
           </button>
         </td>
@@ -328,13 +384,21 @@ function AccountRow({
 
       {/* Expanded photo row */}
       {account.expanded && (
-        <tr style={{ borderBottom: '1px solid rgba(0,229,200,0.05)', background: 'rgba(0,0,0,0.3)' }}>
-          <td colSpan={8} style={{ padding: '12px 16px 14px' }}>
+        <tr style={{ borderBottom: '1px solid rgba(0,229,200,0.08)', background: 'rgba(0,0,0,0.4)' }}>
+          <td colSpan={8} style={{ padding: '18px 20px 20px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 20 }}>
-              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.4)', letterSpacing: '0.12em', paddingTop: 4, flexShrink: 0 }}>
-                PHOTOS
+              <div style={{ paddingTop: 2, flexShrink: 0 }}>
+                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.5)', letterSpacing: '0.15em', fontWeight: 700, marginBottom: 4 }}>
+                  PROFILE PHOTOS
+                </div>
+                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 8, color: 'rgba(224,224,224,0.25)', lineHeight: 1.6 }}>
+                  Account #{String(index + 1).padStart(2, '0')}<br />
+                  {MAX_PHOTOS} slots · JPG / PNG
+                </div>
               </div>
-              <PhotoUploader account={account} onChange={onChange} />
+              <div style={{ flex: 1 }}>
+                <PhotoUploader account={account} onChange={onChange} />
+              </div>
             </div>
           </td>
         </tr>
@@ -691,7 +755,7 @@ export default function CreateJobPage() {
                       { label: 'Birthday', w: 130 },
                       { label: 'Gender', w: 72 },
                       { label: 'Proxy', w: 200, hint: 'host:port:user:pass' },
-                      { label: 'Photos', w: 80 },
+                      { label: 'Photos', w: 110, hint: `${MAX_PHOTOS} required` },
                     ].map(h => (
                       <th key={h.label} style={{ padding: '10px 6px', textAlign: 'left', fontFamily: '"JetBrains Mono", monospace', fontSize: 8, color: 'rgba(0,229,200,0.4)', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, width: h.w }}>
                         {h.label}
