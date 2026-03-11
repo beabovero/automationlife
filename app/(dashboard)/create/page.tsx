@@ -507,58 +507,50 @@ export default function CreateJobPage() {
         return
       }
 
+      // 1. Create job row — only real columns
       const { data: job, error: jobErr } = await supabase.from('jobs').insert({
         user_id: user.id,
         status: 'queued',
         total_accounts: accounts.length,
-        completed_accounts: 0,
-        failed_accounts: 0,
-        credits_reserved: actualCost,
-        credits_charged: 0,
-        config: {
-          country,
-          accounts: accounts.map(a => ({
-            profileName: a.profileName,
-            profileNote: a.profileNote,
-            desiredName: a.desiredName,
-            birthday: a.birthday,
-            gender: a.gender,
-            proxy: a.proxy,
-            photos: [],
-          })),
-        },
-        started_at: null, completed_at: null, worker_id: null, error_message: null,
+        completed_count: 0,
+        failed_count: 0,
       }).select().single()
       if (jobErr) throw jobErr
 
-      // Upload photos per account
-      const accountsWithPhotos = await Promise.all(accounts.map(async (a, ai) => {
-        const paths: string[] = []
-        for (let pi = 0; pi < a.photos.length; pi++) {
-          const file = a.photos[pi]
-          const path = `${user.id}/${job.id}/acc${ai}_${pi}_${file.name}`
-          const { error: upErr } = await supabase.storage.from('account-photos').upload(path, file)
-          if (upErr) throw upErr
-          paths.push(path)
-          await supabase.from('account_photos').insert({
-            account_id: job.id, job_id: job.id, user_id: user.id,
-            storage_path: path, original_filename: file.name, order_index: pi,
-          })
-        }
-        return {
-          profileName: a.profileName,
-          profileNote: a.profileNote,
-          desiredName: a.desiredName,
+      // 2. Create one accounts row per account, then upload its photos
+      for (let ai = 0; ai < accounts.length; ai++) {
+        const a = accounts[ai]
+
+        // remarks stores the Bumble display name — read by the worker as desiredName
+        const { data: acct, error: acctErr } = await supabase.from('accounts').insert({
+          job_id: job.id,
+          user_id: user.id,
+          position: ai,
+          status: 'pending',
+          profile_name: a.profileName,
+          remarks: a.desiredName,
           birthday: a.birthday,
           gender: a.gender,
+          country,
           proxy: a.proxy,
-          photos: paths,
-        }
-      }))
+        }).select().single()
+        if (acctErr) throw acctErr
 
-      await supabase.from('jobs').update({
-        config: { country, accounts: accountsWithPhotos },
-      }).eq('id', job.id)
+        // Upload photos and create account_photos rows
+        for (let pi = 0; pi < a.photos.length; pi++) {
+          const file = a.photos[pi]
+          const ext = file.name.split('.').pop() || 'jpg'
+          const path = `${user.id}/${job.id}/${acct.id}/${pi}.${ext}`
+          const { error: upErr } = await supabase.storage.from('account-photos').upload(path, file)
+          if (upErr) throw upErr
+          await supabase.from('account_photos').insert({
+            account_id: acct.id,
+            user_id: user.id,
+            storage_path: path,
+            position: pi,
+          })
+        }
+      }
 
       router.push(`/jobs/${job.id}`)
     } catch (err: unknown) {
