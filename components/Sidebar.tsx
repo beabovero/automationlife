@@ -40,9 +40,11 @@ export default function Sidebar({ credits, isAdmin: _isAdmin }: Props) {
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        background: '#030303',
+        background: 'rgba(3,3,3,0.92)',
         borderRight: '1px solid rgba(0,229,200,0.08)',
         fontFamily: '"JetBrains Mono", monospace',
+        position: 'relative',
+        zIndex: 2,
       }}
     >
       {/* Logo */}

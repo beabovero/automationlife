@@ -32,9 +32,11 @@ export default function AdminSidebar({ email }: Props) {
       height: '100vh',
       display: 'flex',
       flexDirection: 'column',
-      background: '#030303',
+      background: 'rgba(3,3,3,0.92)',
       borderRight: '1px solid rgba(168,85,247,0.1)',
       fontFamily: '"JetBrains Mono", monospace',
+      position: 'relative',
+      zIndex: 2,
     }}>
       {/* Logo */}
       <div style={{
