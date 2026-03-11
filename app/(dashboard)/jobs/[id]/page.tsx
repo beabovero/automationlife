@@ -117,7 +117,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#000' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'transparent' }}>
         <RefreshCw size={20} style={{ color: '#00e5c8', animation: 'spin 1s linear infinite' }} />
       </div>
     )
@@ -125,7 +125,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   if (!job) {
     return (
-      <div style={{ padding: '2.5rem', background: '#000', fontFamily: '"JetBrains Mono", monospace', fontSize: 12, color: '#ef4444' }}>
+      <div style={{ padding: '2.5rem', background: 'transparent', fontFamily: '"JetBrains Mono", monospace', fontSize: 12, color: '#ef4444' }}>
         Job not found
       </div>
     )
@@ -141,7 +141,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   ]
 
   return (
-    <div style={{ padding: '2.5rem', minHeight: '100vh', background: '#000' }}>
+    <div style={{ padding: '2.5rem', minHeight: '100vh', background: 'transparent' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: '2.5rem' }}>
         <Link

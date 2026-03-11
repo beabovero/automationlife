@@ -18,7 +18,7 @@ export default async function AdminAnalyticsPage() {
   const totalGranted   = txs?.filter(t => t.type === 'admin_grant').reduce((s, t) => s + Math.max(0, t.amount), 0) ?? 0
 
   return (
-    <div style={{ padding: '2.5rem', minHeight: '100vh', background: '#000' }}>
+    <div style={{ padding: '2.5rem', minHeight: '100vh', background: 'transparent' }}>
       {/* Header */}
       <div style={{ marginBottom: '2.5rem' }}>
         <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(168,85,247,0.5)', letterSpacing: '0.2em', marginBottom: 6 }}>

@@ -19,7 +19,7 @@ export default async function JobsPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div style={{ padding: '2.5rem', minHeight: '100vh', background: '#000' }}>
+    <div style={{ padding: '2.5rem', minHeight: '100vh', background: 'transparent' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
         <div>

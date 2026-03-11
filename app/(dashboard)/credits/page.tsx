@@ -38,7 +38,7 @@ export default async function CreditsPage() {
   const credits = settings?.credits ?? 0
 
   return (
-    <div style={{ padding: '2.5rem', minHeight: '100vh', background: '#000' }}>
+    <div style={{ padding: '2.5rem', minHeight: '100vh', background: 'transparent' }}>
       {/* Header */}
       <div style={{ marginBottom: '2.5rem' }}>
         <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.4)', letterSpacing: '0.2em', marginBottom: 6 }}>
