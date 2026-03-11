@@ -69,31 +69,42 @@ function StatusBadge({ status }: { status: Job['status'] }) {
   return <span className={`badge badge-${status}`}>{status}</span>
 }
 
-const STAGE_NAMES = ['PHONE', 'SESSION', 'SMS', 'PROFILE', 'PREFS', 'AI CONFIRM']
+// Real 7-stage pipeline matching _dashboard_workflow.json
+const STAGE_NAMES = [
+  { short: 'BOOT',    label: 'Cloud Phone Boot' },
+  { short: 'LAUNCH',  label: 'App Launch' },
+  { short: 'OTP',     label: 'SMS Verify' },
+  { short: 'AI PERMS',label: 'Permission AI' },
+  { short: 'PROFILE', label: 'Profile Build' },
+  { short: 'PREFS',   label: 'Preferences' },
+  { short: 'LIVE',    label: 'Confirmed Live' },
+]
 
 function StagePipeline({ currentStage }: { currentStage: number }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'nowrap', overflow: 'hidden' }}>
-      {STAGE_NAMES.map((name, i) => {
+      {STAGE_NAMES.map((s, i) => {
         const n = i + 1
         const active = n === currentStage
         const done = n < currentStage
         return (
           <div key={n} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
             <div style={{
-              padding: '3px 7px', borderRadius: 4, fontSize: 8,
-              fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em',
+              padding: '3px 6px', borderRadius: 4, fontSize: 7.5,
+              fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.03em',
               border: `1px solid ${active ? '#00e5c8' : done ? 'rgba(0,229,200,0.25)' : 'rgba(255,255,255,0.06)'}`,
               background: active ? 'rgba(0,229,200,0.12)' : done ? 'rgba(0,229,200,0.04)' : 'transparent',
               color: active ? '#00e5c8' : done ? 'rgba(0,229,200,0.45)' : 'rgba(224,224,224,0.18)',
               boxShadow: active ? '0 0 10px rgba(0,229,200,0.35)' : 'none',
               transition: 'all 0.3s',
               whiteSpace: 'nowrap',
-            }}>
-              {n}·{name}
+            }}
+              title={s.label}
+            >
+              {n}·{s.short}
             </div>
-            {i < 5 && (
-              <div style={{ width: 8, height: 1, background: done ? 'rgba(0,229,200,0.25)' : 'rgba(255,255,255,0.04)', flexShrink: 0 }} />
+            {i < 6 && (
+              <div style={{ width: 5, height: 1, background: done ? 'rgba(0,229,200,0.25)' : 'rgba(255,255,255,0.04)', flexShrink: 0 }} />
             )}
           </div>
         )
