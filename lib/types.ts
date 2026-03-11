@@ -252,10 +252,13 @@ export type AccountStatusEvent = AccountStatusEventRow
 export type CreditTransaction = CreditTransactionRow
 
 // Per-account config — one entry per Bumble account in the batch
+// Field names match EXACTLY what desktop_automation.py reads:
+//   profile.get("desiredName"), profile.get("birthday"), profile.get("gender")
+//   context["profileName"] (from metadata.profileName)
 export interface AccountConfig {
-  profile_name: string       // Geelark dashboard label (e.g. @handle, Order#123)
-  profile_note: string       // Optional remarks shown in Geelark
-  desired_name: string       // Bumble display name
+  profileName: string        // Geelark dashboard label (e.g. @handle, Order#123)
+  profileNote: string        // Optional remarks shown in Geelark
+  desiredName: string        // Bumble display name
   birthday: string           // YYYY-MM-DD
   gender: 'male' | 'female'
   proxy: string              // host:port:user:pass

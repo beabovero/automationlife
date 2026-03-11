@@ -27,14 +27,17 @@ const LOCKED_COUNTRIES = [
 ]
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+// Field names match EXACTLY what desktop_automation.py reads:
+//   profile.get("desiredName"), profile.get("birthday"), profile.get("gender")
+//   context["profileName"] (from metadata.profileName)
 
 type AccountDraft = {
   id: string
-  profile_name: string    // Geelark dashboard label (order ID, @handle, etc.)
-  profile_note: string    // Optional remarks
-  desired_name: string    // Bumble display name
-  birthday: string        // YYYY-MM-DD
-  gender: 'male' | 'female'
+  profileName: string     // Geelark dashboard label — metadata.profileName
+  profileNote: string     // Optional Geelark remarks
+  desiredName: string     // Bumble display name — profile.get("desiredName")
+  birthday: string        // YYYY-MM-DD — profile.get("birthday")
+  gender: 'male' | 'female' // profile.get("gender")
   proxy: string           // host:port:user:pass
   photos: File[]
   photoPreviews: string[]
@@ -44,9 +47,9 @@ type AccountDraft = {
 function makeAccount(n: number): AccountDraft {
   return {
     id: `${Date.now()}-${n}`,
-    profile_name: '',
-    profile_note: '',
-    desired_name: '',
+    profileName: '',
+    profileNote: '',
+    desiredName: '',
     birthday: '',
     gender: 'female',
     proxy: '',
@@ -58,8 +61,8 @@ function makeAccount(n: number): AccountDraft {
 
 function isReady(a: AccountDraft): boolean {
   return (
-    a.profile_name.trim().length > 0 &&
-    a.desired_name.trim().length > 0 &&
+    a.profileName.trim().length > 0 &&
+    a.desiredName.trim().length > 0 &&
     a.birthday.length > 0 &&
     a.proxy.trim().length > 0 &&
     isValidProxy(a.proxy.trim()) &&
@@ -70,6 +73,19 @@ function isReady(a: AccountDraft): boolean {
 function isValidProxy(p: string): boolean {
   const parts = p.split(':')
   return parts.length >= 2 && parts[0].length > 0 && !isNaN(parseInt(parts[1]))
+}
+
+// ─── Age calculator ───────────────────────────────────────────────────────────
+
+function calcAge(birthday: string): number | null {
+  if (!birthday) return null
+  const today = new Date()
+  const birth = new Date(birthday)
+  if (isNaN(birth.getTime())) return null
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+  return age > 0 && age < 100 ? age : null
 }
 
 // ─── Row photo uploader component ────────────────────────────────────────────
@@ -207,6 +223,7 @@ function AccountRow({
   const ready = isReady(account)
   const proxyOk = account.proxy.trim().length > 0 && isValidProxy(account.proxy.trim())
   const proxyBad = account.proxy.trim().length > 0 && !isValidProxy(account.proxy.trim())
+  const age = calcAge(account.birthday)
 
   return (
     <>
@@ -230,16 +247,16 @@ function AccountRow({
           <div style={{ position: 'relative' }}>
             <input
               type="text"
-              value={account.profile_name}
-              onChange={e => onChange({ profile_name: e.target.value })}
+              value={account.profileName}
+              onChange={e => onChange({ profileName: e.target.value })}
               placeholder="@handle or Order#123"
-              style={{ ...INPUT_STYLE, borderColor: account.profile_name ? 'rgba(0,229,200,0.2)' : 'rgba(239,68,68,0.2)' }}
+              style={{ ...INPUT_STYLE, borderColor: account.profileName ? 'rgba(0,229,200,0.2)' : 'rgba(239,68,68,0.2)' }}
             />
-            {account.profile_name && !isLast && (
+            {account.profileName && !isLast && (
               <button
                 type="button"
                 title="Copy value to all accounts below"
-                onClick={() => onCopyDown('profile_name', account.profile_name)}
+                onClick={() => onCopyDown('profileName', account.profileName)}
                 style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,229,200,0.3)', padding: 0 }}
               >
                 <Copy size={9} />
@@ -252,8 +269,8 @@ function AccountRow({
         <td style={{ ...CELL, width: 120 }}>
           <input
             type="text"
-            value={account.profile_note}
-            onChange={e => onChange({ profile_note: e.target.value })}
+            value={account.profileNote}
+            onChange={e => onChange({ profileNote: e.target.value })}
             placeholder="optional"
             style={{ ...INPUT_STYLE, borderColor: 'rgba(255,255,255,0.06)' }}
           />
@@ -264,16 +281,16 @@ function AccountRow({
           <div style={{ position: 'relative' }}>
             <input
               type="text"
-              value={account.desired_name}
-              onChange={e => onChange({ desired_name: e.target.value })}
+              value={account.desiredName}
+              onChange={e => onChange({ desiredName: e.target.value })}
               placeholder="Emma"
-              style={{ ...INPUT_STYLE, borderColor: account.desired_name ? 'rgba(0,229,200,0.2)' : 'rgba(239,68,68,0.2)' }}
+              style={{ ...INPUT_STYLE, borderColor: account.desiredName ? 'rgba(0,229,200,0.2)' : 'rgba(239,68,68,0.2)' }}
             />
-            {account.desired_name && !isLast && (
+            {account.desiredName && !isLast && (
               <button
                 type="button"
                 title="Copy to all below"
-                onClick={() => onCopyDown('desired_name', account.desired_name)}
+                onClick={() => onCopyDown('desiredName', account.desiredName)}
                 style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,229,200,0.3)', padding: 0 }}
               >
                 <Copy size={9} />
@@ -282,24 +299,37 @@ function AccountRow({
           </div>
         </td>
 
-        {/* Birthday */}
-        <td style={{ ...CELL, width: 130 }}>
-          <div style={{ position: 'relative' }}>
-            <input
-              type="date"
-              value={account.birthday}
-              onChange={e => onChange({ birthday: e.target.value })}
-              style={{ ...INPUT_STYLE, colorScheme: 'dark', borderColor: account.birthday ? 'rgba(0,229,200,0.2)' : 'rgba(239,68,68,0.2)' }}
-            />
-            {account.birthday && !isLast && (
-              <button
-                type="button"
-                title="Copy to all below"
-                onClick={() => onCopyDown('birthday', account.birthday)}
-                style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,229,200,0.3)', padding: 0 }}
-              >
-                <Copy size={9} />
-              </button>
+        {/* Birthday + Age */}
+        <td style={{ ...CELL, width: 150 }}>
+          <div>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="date"
+                value={account.birthday}
+                onChange={e => onChange({ birthday: e.target.value })}
+                style={{ ...INPUT_STYLE, colorScheme: 'dark', borderColor: account.birthday ? 'rgba(0,229,200,0.2)' : 'rgba(239,68,68,0.2)' }}
+              />
+              {account.birthday && !isLast && (
+                <button
+                  type="button"
+                  title="Copy to all below"
+                  onClick={() => onCopyDown('birthday', account.birthday)}
+                  style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,229,200,0.3)', padding: 0 }}
+                >
+                  <Copy size={9} />
+                </button>
+              )}
+            </div>
+            {/* Age badge — shown as soon as birthday is complete */}
+            {age !== null && (
+              <div style={{ marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,229,200,0.1)', border: '1px solid rgba(0,229,200,0.25)' }}>
+                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, fontWeight: 700, color: '#00e5c8' }}>
+                  {age}
+                </span>
+                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 8, color: 'rgba(0,229,200,0.5)', letterSpacing: '0.06em' }}>
+                  yrs old
+                </span>
+              </div>
             )}
           </div>
         </td>
@@ -418,13 +448,15 @@ export default function CreateJobPage() {
   const [country] = useState('TH')
   const [accounts, setAccounts] = useState<AccountDraft[]>([])
   const [credits, setCredits] = useState<number | null>(null)
+  const [hasGeelarkKey, setHasGeelarkKey] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const tableRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    supabase.from('user_settings').select('credits').single().then(({ data }) => {
+    supabase.from('user_settings').select('credits, geelark_api_key').single().then(({ data }) => {
       setCredits(data?.credits ?? 0)
+      setHasGeelarkKey(!!(data?.geelark_api_key?.trim()))
     })
   }, [])
 
@@ -486,9 +518,9 @@ export default function CreateJobPage() {
         config: {
           country,
           accounts: accounts.map(a => ({
-            profile_name: a.profile_name,
-            profile_note: a.profile_note,
-            desired_name: a.desired_name,
+            profileName: a.profileName,
+            profileNote: a.profileNote,
+            desiredName: a.desiredName,
             birthday: a.birthday,
             gender: a.gender,
             proxy: a.proxy,
@@ -514,9 +546,9 @@ export default function CreateJobPage() {
           })
         }
         return {
-          profile_name: a.profile_name,
-          profile_note: a.profile_note,
-          desired_name: a.desired_name,
+          profileName: a.profileName,
+          profileNote: a.profileNote,
+          desiredName: a.desiredName,
           birthday: a.birthday,
           gender: a.gender,
           proxy: a.proxy,
@@ -539,7 +571,7 @@ export default function CreateJobPage() {
   const totalCost = accounts.length * CREDITS_PER_ACCOUNT
   const noCredits = credits !== null && credits === 0
   const insufficientCredits = credits !== null && credits < totalCost && credits > 0
-  const canSubmit = !noCredits && !insufficientCredits && !loading && readyCount === accounts.length && accounts.length > 0
+  const canSubmit = hasGeelarkKey === true && !noCredits && !insufficientCredits && !loading && readyCount === accounts.length && accounts.length > 0
 
   return (
     <div style={{ padding: '2.5rem', minHeight: '100vh', background: 'transparent' }}>
@@ -572,6 +604,48 @@ export default function CreateJobPage() {
           </span>
         </div>
       </div>
+
+      {/* ── No Geelark key banner ── */}
+      {hasGeelarkKey === false && (
+        <div style={{
+          borderRadius: 14, border: '1px solid rgba(239,68,68,0.25)',
+          background: 'rgba(239,68,68,0.04)',
+          padding: '1.25rem 1.5rem',
+          marginBottom: '1.5rem',
+          display: 'flex', alignItems: 'center', gap: 16,
+        }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+            border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <AlertTriangle size={16} style={{ color: '#ef4444' }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, fontWeight: 700, color: '#ef4444', letterSpacing: '0.1em', marginBottom: 4 }}>
+              GEELARK API KEY NOT SET
+            </div>
+            <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: 'rgba(224,224,224,0.45)', lineHeight: 1.5 }}>
+              Automation creates cloud phones directly in your Geelark account. Without your API key, no phones can be provisioned and the job cannot run.
+            </div>
+          </div>
+          <a
+            href="/settings"
+            style={{
+              flexShrink: 0,
+              display: 'inline-flex', alignItems: 'center', gap: 7,
+              padding: '10px 18px', borderRadius: 8,
+              background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)',
+              fontFamily: '"JetBrains Mono", monospace', fontSize: 10, fontWeight: 700,
+              color: '#ef4444', letterSpacing: '0.08em', textDecoration: 'none',
+              cursor: 'pointer', whiteSpace: 'nowrap',
+              transition: 'all 0.15s',
+            }}
+          >
+            Add API Key →
+          </a>
+        </div>
+      )}
 
       {/* ── No credits banner ── */}
       {noCredits && (
@@ -738,7 +812,7 @@ export default function CreateJobPage() {
                 Click <Copy size={9} style={{ display: 'inline', verticalAlign: 'middle' }} /> to copy a value to all rows below
               </div>
               <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(224,224,224,0.25)' }}>
-                Click <span style={{ color: 'rgba(0,229,200,0.4)' }}>N/6</span> to upload photos for each account
+                Click <span style={{ color: 'rgba(0,229,200,0.4)' }}>N/4</span> to upload photos for each account
               </div>
             </div>
 
