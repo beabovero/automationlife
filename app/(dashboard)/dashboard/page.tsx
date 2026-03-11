@@ -125,13 +125,6 @@ export default async function DashboardPage() {
             gap: 8,
             alignItems: 'center',
             boxShadow: '0 0 25px rgba(0,229,200,0.3)',
-            transition: 'transform 0.15s',
-          }}
-          onMouseEnter={e => {
-            ;(e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-1px)'
-          }}
-          onMouseLeave={e => {
-            ;(e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(0)'
           }}
         >
           <PlusCircle size={13} />
@@ -158,17 +151,6 @@ export default async function DashboardPage() {
               background: '#000',
               position: 'relative',
               overflow: 'hidden',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={e => {
-              const el = e.currentTarget as HTMLDivElement
-              el.style.borderColor = 'rgba(0,229,200,0.2)'
-              el.style.boxShadow = '0 0 30px rgba(0,229,200,0.04)'
-            }}
-            onMouseLeave={e => {
-              const el = e.currentTarget as HTMLDivElement
-              el.style.borderColor = 'rgba(255,255,255,0.05)'
-              el.style.boxShadow = 'none'
             }}
           >
             {/* Dot indicator top-right */}
@@ -415,13 +397,6 @@ export default async function DashboardPage() {
                     key={job.id}
                     style={{
                       borderBottom: '1px solid rgba(0,229,200,0.04)',
-                      transition: 'background 0.15s',
-                    }}
-                    onMouseEnter={e => {
-                      ;(e.currentTarget as HTMLTableRowElement).style.background = 'rgba(0,229,200,0.015)'
-                    }}
-                    onMouseLeave={e => {
-                      ;(e.currentTarget as HTMLTableRowElement).style.background = 'transparent'
                     }}
                   >
                     <td style={{ padding: '12px 16px' }}>
@@ -432,12 +407,6 @@ export default async function DashboardPage() {
                           fontSize: 11,
                           color: 'rgba(0,212,255,0.9)',
                           textDecoration: 'none',
-                        }}
-                        onMouseEnter={e => {
-                          ;(e.currentTarget as HTMLAnchorElement).style.textDecoration = 'underline'
-                        }}
-                        onMouseLeave={e => {
-                          ;(e.currentTarget as HTMLAnchorElement).style.textDecoration = 'none'
                         }}
                       >
                         {job.id.slice(0, 8)}…
