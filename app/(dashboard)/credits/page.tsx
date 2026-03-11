@@ -2,25 +2,20 @@ import { createClient } from '@/lib/supabase/server'
 import type { CreditTransaction } from '@/lib/types'
 import { Zap } from 'lucide-react'
 
-function TxBadge({ type }: { type: CreditTransaction['type'] }) {
-  const styles: Record<string, { color: string; border: string; bg: string }> = {
-    purchase:    { color: '#00e5c8', border: 'rgba(0,229,200,0.3)',  bg: 'rgba(0,229,200,0.06)' },
-    deduction:   { color: '#ef4444', border: 'rgba(239,68,68,0.3)',  bg: 'rgba(239,68,68,0.06)' },
-    refund:      { color: '#00d4ff', border: 'rgba(0,212,255,0.3)',  bg: 'rgba(0,212,255,0.06)' },
-    admin_grant: { color: '#a855f7', border: 'rgba(168,85,247,0.3)', bg: 'rgba(168,85,247,0.06)' },
-  }
-  const s = styles[type] ?? { color: '#e0e0e0', border: 'rgba(255,255,255,0.1)', bg: 'rgba(255,255,255,0.03)' }
+function AmountBadge({ amount }: { amount: CreditTransaction['amount'] }) {
+  const positive = amount > 0
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center',
       padding: '3px 10px', borderRadius: 3,
       fontFamily: '"JetBrains Mono", monospace',
-      fontSize: '0.7rem', fontWeight: 600,
-      letterSpacing: '0.1em', textTransform: 'uppercase',
-      border: `1px solid ${s.border}`,
-      color: s.color, background: s.bg,
+      fontSize: '0.7rem', fontWeight: 700,
+      letterSpacing: '0.1em',
+      border: `1px solid ${positive ? 'rgba(0,229,200,0.3)' : 'rgba(239,68,68,0.3)'}`,
+      color: positive ? '#00e5c8' : '#ef4444',
+      background: positive ? 'rgba(0,229,200,0.06)' : 'rgba(239,68,68,0.06)',
     }}>
-      {type.replace('_', ' ')}
+      {positive ? '+' : ''}{amount}
     </span>
   )
 }
@@ -176,7 +171,7 @@ export default async function CreditsPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ background: 'rgba(0,229,200,0.03)' }}>
-                  {['Date', 'Type', 'Amount', 'Description'].map(h => (
+                  {['Date', 'Amount', 'Reason', 'Notes'].map(h => (
                     <th
                       key={h}
                       style={{
@@ -203,15 +198,13 @@ export default async function CreditsPage() {
                       {new Date(tx.created_at).toLocaleString()}
                     </td>
                     <td style={{ padding: '12px 16px' }}>
-                      <TxBadge type={tx.type} />
+                      <AmountBadge amount={tx.amount} />
                     </td>
-                    <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 12, fontWeight: 700 }}>
-                      <span style={{ color: tx.amount > 0 ? '#00e5c8' : '#ef4444' }}>
-                        {tx.amount > 0 ? '+' : ''}{tx.amount}
-                      </span>
+                    <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.6)' }}>
+                      {tx.reason ?? '—'}
                     </td>
-                    <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.45)' }}>
-                      {tx.description ?? '—'}
+                    <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.35)' }}>
+                      {tx.notes ?? '—'}
                     </td>
                   </tr>
                 ))}

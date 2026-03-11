@@ -2,19 +2,18 @@ export type Json = string | number | boolean | null | { [key: string]: Json } | 
 
 export type JobStatus = 'queued' | 'processing' | 'completed' | 'failed' | 'retrying' | 'partial'
 export type AccountStatus = 'pending' | 'active' | 'failed' | 'banned'
-export type TransactionType = 'purchase' | 'deduction' | 'refund' | 'admin_grant'
 
-// ─── Row types ────────────────────────────────────────────────────────────────
+// ─── Row types (verified against live Supabase schema) ────────────────────────
 
 type UserSettingsRow = {
-  id: string
   user_id: string
   geelark_api_key: string | null
+  geelark_app_id: string | null
+  geelark_base_url: string | null
   credits: number
   total_accounts_created: number
-  trial_used: boolean
   plan: string | null
-  plan_expires_at: string | null
+  plan_started_at: string | null
   created_at: string
   updated_at: string
 }
@@ -24,48 +23,33 @@ type JobRow = {
   user_id: string
   status: JobStatus
   total_accounts: number
-  completed_accounts: number
-  failed_accounts: number
-  credits_reserved: number
-  credits_charged: number
-  config: Json
+  completed_count: number
+  failed_count: number
   created_at: string
   updated_at: string
-  started_at: string | null
-  completed_at: string | null
-  worker_id: string | null
-  error_message: string | null
 }
 
 type AccountRow = {
   id: string
   job_id: string
   user_id: string
+  position: number
   status: AccountStatus
-  geelark_phone_id: string | null
-  geelark_profile_id: string | null
-  bumble_username: string | null
-  phone_number: string | null
-  sms_provider_order_id: string | null
-  stage_reached: number | null
-  current_checkpoint: string | null
-  error_message: string | null
-  retry_count: number
-  credits_charged: number
+  is_retry: boolean
+  original_account_id: string | null
+  retry_attempt: number
+  profile_name: string | null
+  birthday: string | null
+  gender: string | null
+  country: string | null
+  proxy: string | null
+  remarks: string | null
+  geelark_env_id: string | null
+  geelark_env_serial_no: string | null
+  failure_reason: string | null
+  credits_charged: boolean
   created_at: string
   updated_at: string
-  completed_at: string | null
-}
-
-type AccountPhotoRow = {
-  id: string
-  account_id: string
-  job_id: string
-  user_id: string
-  storage_path: string
-  original_filename: string | null
-  order_index: number
-  created_at: string
 }
 
 type AccountStatusEventRow = {
@@ -73,21 +57,17 @@ type AccountStatusEventRow = {
   account_id: string
   job_id: string
   user_id: string
-  stage: number | null
-  checkpoint: string | null
+  label: string | null
   status: string
-  message: string | null
-  metadata: Json | null
   created_at: string
 }
 
 type CreditTransactionRow = {
   id: string
   user_id: string
-  type: TransactionType
   amount: number
-  description: string | null
-  job_id: string | null
+  reason: string | null
+  notes: string | null
   account_id: string | null
   created_at: string
 }
@@ -102,19 +82,22 @@ export interface Database {
         Insert: {
           user_id: string
           geelark_api_key?: string | null
+          geelark_app_id?: string | null
+          geelark_base_url?: string | null
           credits?: number
           total_accounts_created?: number
-          trial_used?: boolean
           plan?: string | null
-          plan_expires_at?: string | null
+          plan_started_at?: string | null
         }
         Update: {
           geelark_api_key?: string | null
+          geelark_app_id?: string | null
+          geelark_base_url?: string | null
           credits?: number
           total_accounts_created?: number
-          trial_used?: boolean
           plan?: string | null
-          plan_expires_at?: string | null
+          plan_started_at?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -130,26 +113,14 @@ export interface Database {
           user_id: string
           status: JobStatus
           total_accounts: number
-          completed_accounts: number
-          failed_accounts: number
-          credits_reserved: number
-          credits_charged: number
-          config: Json
-          started_at?: string | null
-          completed_at?: string | null
-          worker_id?: string | null
-          error_message?: string | null
+          completed_count?: number
+          failed_count?: number
         }
         Update: {
           status?: JobStatus
-          completed_accounts?: number
-          failed_accounts?: number
-          credits_charged?: number
-          config?: Json
-          started_at?: string | null
-          completed_at?: string | null
-          worker_id?: string | null
-          error_message?: string | null
+          completed_count?: number
+          failed_count?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -158,46 +129,30 @@ export interface Database {
         Insert: {
           job_id: string
           user_id: string
+          position: number
           status: AccountStatus
-          geelark_phone_id?: string | null
-          geelark_profile_id?: string | null
-          bumble_username?: string | null
-          phone_number?: string | null
-          sms_provider_order_id?: string | null
-          stage_reached?: number | null
-          current_checkpoint?: string | null
-          error_message?: string | null
-          retry_count?: number
-          credits_charged?: number
-          completed_at?: string | null
+          is_retry?: boolean
+          original_account_id?: string | null
+          retry_attempt?: number
+          profile_name?: string | null
+          birthday?: string | null
+          gender?: string | null
+          country?: string | null
+          proxy?: string | null
+          remarks?: string | null
+          geelark_env_id?: string | null
+          geelark_env_serial_no?: string | null
+          failure_reason?: string | null
+          credits_charged?: boolean
         }
         Update: {
           status?: AccountStatus
-          geelark_phone_id?: string | null
-          geelark_profile_id?: string | null
-          bumble_username?: string | null
-          phone_number?: string | null
-          sms_provider_order_id?: string | null
-          stage_reached?: number | null
-          current_checkpoint?: string | null
-          error_message?: string | null
-          retry_count?: number
-          credits_charged?: number
-          completed_at?: string | null
+          geelark_env_id?: string | null
+          geelark_env_serial_no?: string | null
+          failure_reason?: string | null
+          credits_charged?: boolean
+          updated_at?: string
         }
-        Relationships: []
-      }
-      account_photos: {
-        Row: AccountPhotoRow
-        Insert: {
-          account_id: string
-          job_id: string
-          user_id: string
-          storage_path: string
-          original_filename?: string | null
-          order_index: number
-        }
-        Update: Record<string, never>
         Relationships: []
       }
       account_status_events: {
@@ -206,11 +161,8 @@ export interface Database {
           account_id: string
           job_id: string
           user_id: string
-          stage?: number | null
-          checkpoint?: string | null
+          label?: string | null
           status: string
-          message?: string | null
-          metadata?: Json | null
         }
         Update: Record<string, never>
         Relationships: []
@@ -219,10 +171,9 @@ export interface Database {
         Row: CreditTransactionRow
         Insert: {
           user_id: string
-          type: TransactionType
           amount: number
-          description?: string | null
-          job_id?: string | null
+          reason?: string | null
+          notes?: string | null
           account_id?: string | null
         }
         Update: Record<string, never>
@@ -243,26 +194,21 @@ export interface Database {
 export type UserSettings = UserSettingsRow
 export type Job = JobRow
 export type Account = AccountRow
-export type AccountPhoto = AccountPhotoRow
 export type AccountStatusEvent = AccountStatusEventRow
 export type CreditTransaction = CreditTransactionRow
 
-// Per-account config — one entry per Bumble account in the batch
-// Field names match EXACTLY what desktop_automation.py reads:
-//   profile.get("desiredName"), profile.get("birthday"), profile.get("gender")
-//   context["profileName"] (from metadata.profileName)
+// Per-account config passed in job creation form
 export interface AccountConfig {
-  profileName: string        // Geelark dashboard label (e.g. @handle, Order#123)
-  profileNote: string        // Optional remarks shown in Geelark
-  desiredName: string        // Bumble display name
-  birthday: string           // YYYY-MM-DD
+  profileName: string
+  profileNote: string
+  desiredName: string
+  birthday: string    // YYYY-MM-DD
   gender: 'male' | 'female'
-  proxy: string              // host:port:user:pass
-  photos: string[]           // Supabase storage paths
+  proxy: string       // host:port:user:pass
+  photos: string[]    // Supabase storage paths
 }
 
-// Job config shape (stored as JSON in jobs.config)
 export interface JobConfig {
-  country: string            // ISO country code (e.g. 'TH')
-  accounts: AccountConfig[]  // one entry per account in the batch
+  country: string
+  accounts: AccountConfig[]
 }
