@@ -86,11 +86,9 @@ type CreditTransactionRow = {
   user_id: string
   type: TransactionType
   amount: number
-  balance_after: number
   description: string | null
   job_id: string | null
   account_id: string | null
-  admin_user_id: string | null
   created_at: string
 }
 
@@ -223,7 +221,6 @@ export interface Database {
           user_id: string
           type: TransactionType
           amount: number
-          balance_after: number
           description?: string | null
           job_id?: string | null
           account_id?: string | null

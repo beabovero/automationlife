@@ -33,10 +33,7 @@ export async function POST(req: NextRequest) {
     user_id: userId,
     type: 'admin_grant',
     amount,
-    balance_after: newBalance,
     description: description || `Admin grant by ${user.email}`,
-    job_id: null,
-    account_id: null,
   })
   if (e2) return NextResponse.json({ error: e2.message }, { status: 500 })
 
