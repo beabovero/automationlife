@@ -35,7 +35,6 @@ export async function POST(req: NextRequest) {
     amount,
     balance_after: newBalance,
     description: description || `Admin grant by ${user.email}`,
-    admin_user_id: user.id,
     job_id: null,
     account_id: null,
   })
