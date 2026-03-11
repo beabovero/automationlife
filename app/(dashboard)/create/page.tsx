@@ -1,91 +1,346 @@
 'use client'
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
 import { createClient } from '@/lib/supabase/client'
-import SimulationPanel from '@/components/SimulationPanel'
 import {
-  Upload, X, PlusCircle, Zap, Lock, AlertTriangle, Eye,
-  Globe, Server, CheckCircle2, Info,
+  Upload, X, PlusCircle, Zap, Lock, AlertTriangle, ChevronDown, ChevronRight,
+  Copy, CheckCircle2, Info, RefreshCw,
 } from 'lucide-react'
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+
 const MAX_PHOTOS = 6
+const TRIAL_MAX = 10
+const CREDITS_PER_ACCOUNT = 2
 
-// ─── Pipeline stages — generic, no internal details exposed ──────────────────
-const PIPELINE_STAGES = [
-  {
-    n: 1,
-    label: 'Phone Setup',
-    desc: 'A dedicated cloud phone is provisioned and configured with your proxy connection.',
-  },
-  {
-    n: 2,
-    label: 'App Installation',
-    desc: 'The target application is installed and launched on the cloud phone.',
-  },
-  {
-    n: 3,
-    label: 'Phone Verification',
-    desc: 'A virtual number is acquired for the selected country. The verification code is intercepted and submitted automatically.',
-    highlight: true,
-  },
-  {
-    n: 4,
-    label: 'Automatic Setup',
-    desc: 'All permission dialogs and system screens are handled automatically without any manual intervention.',
-  },
-  {
-    n: 5,
-    label: 'Profile Creation',
-    desc: 'Your display name, birthday and photos are submitted — exactly like a real user signing up.',
-  },
-  {
-    n: 6,
-    label: 'Profile Configuration',
-    desc: 'Interests, preferences and profile answers are configured automatically.',
-  },
-  {
-    n: 7,
-    label: 'Account Confirmed',
-    desc: 'Final verification confirms the account is active. Credit is charged only at this step.',
-    highlight: true,
-  },
+// Only Thailand available for trial
+const AVAILABLE_COUNTRIES = [
+  { code: 'TH', flag: '🇹🇭', name: 'Thailand', note: 'Trial — change location post-creation' },
+]
+const LOCKED_COUNTRIES = [
+  { code: 'US', flag: '🇺🇸', name: 'USA' },
+  { code: 'DE', flag: '🇩🇪', name: 'Germany' },
+  { code: 'GB', flag: '🇬🇧', name: 'UK' },
+  { code: 'FR', flag: '🇫🇷', name: 'France' },
+  { code: 'AU', flag: '🇦🇺', name: 'Australia' },
 ]
 
-// ─── Countries — Thailand hardcoded for trial, others locked ─────────────────
-const COUNTRIES = [
-  { code: 'TH', flag: '🇹🇭', name: 'Thailand', available: true,  note: 'Available now' },
-  { code: 'US', flag: '🇺🇸', name: 'USA',       available: false, note: 'Coming soon' },
-  { code: 'DE', flag: '🇩🇪', name: 'Germany',   available: false, note: 'Coming soon' },
-  { code: 'GB', flag: '🇬🇧', name: 'UK',        available: false, note: 'Coming soon' },
-  { code: 'FR', flag: '🇫🇷', name: 'France',    available: false, note: 'Coming soon' },
-]
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+type AccountDraft = {
+  id: string
+  profile_name: string    // Geelark dashboard label (order ID, @handle, etc.)
+  profile_note: string    // Optional remarks
+  desired_name: string    // Bumble display name
+  birthday: string        // YYYY-MM-DD
+  gender: 'male' | 'female'
+  proxy: string           // host:port:user:pass
+  photos: File[]
+  photoPreviews: string[]
+  expanded: boolean
+}
 
-function FieldLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
+function makeAccount(n: number): AccountDraft {
+  return {
+    id: `${Date.now()}-${n}`,
+    profile_name: '',
+    profile_note: '',
+    desired_name: '',
+    birthday: '',
+    gender: 'female',
+    proxy: '',
+    photos: [],
+    photoPreviews: [],
+    expanded: false,
+  }
+}
+
+function isReady(a: AccountDraft): boolean {
   return (
-    <div style={{ marginBottom: 7, display: 'flex', alignItems: 'center', gap: 6 }}>
-      <span style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.45)', letterSpacing: '0.16em', textTransform: 'uppercase' }}>
-        {children}
-      </span>
-      {hint && (
-        <span style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(224,224,224,0.2)' }}>
-          — {hint}
+    a.profile_name.trim().length > 0 &&
+    a.desired_name.trim().length > 0 &&
+    a.birthday.length > 0 &&
+    a.proxy.trim().length > 0 &&
+    isValidProxy(a.proxy.trim()) &&
+    a.photos.length > 0
+  )
+}
+
+function isValidProxy(p: string): boolean {
+  const parts = p.split(':')
+  return parts.length >= 2 && parts[0].length > 0 && !isNaN(parseInt(parts[1]))
+}
+
+// ─── Row photo uploader component ────────────────────────────────────────────
+
+function PhotoUploader({ account, onChange }: {
+  account: AccountDraft
+  onChange: (updates: Partial<AccountDraft>) => void
+}) {
+  const onDrop = useCallback((accepted: File[]) => {
+    const remaining = MAX_PHOTOS - account.photos.length
+    const toAdd = accepted.slice(0, remaining)
+    const newPhotos = [...account.photos, ...toAdd]
+    const newPreviews = [...account.photoPreviews, ...toAdd.map(f => URL.createObjectURL(f))]
+    onChange({ photos: newPhotos, photoPreviews: newPreviews })
+  }, [account.photos, account.photoPreviews])
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop, accept: { 'image/*': [] },
+    maxFiles: MAX_PHOTOS, disabled: account.photos.length >= MAX_PHOTOS,
+  })
+
+  const remove = (i: number) => {
+    URL.revokeObjectURL(account.photoPreviews[i])
+    onChange({
+      photos: account.photos.filter((_, idx) => idx !== i),
+      photoPreviews: account.photoPreviews.filter((_, idx) => idx !== i),
+    })
+  }
+
+  return (
+    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+      {account.photos.length < MAX_PHOTOS && (
+        <div
+          {...getRootProps()}
+          style={{
+            width: 64, height: 64, borderRadius: 8, cursor: 'pointer',
+            border: `2px dashed ${isDragActive ? '#00e5c8' : 'rgba(0,229,200,0.25)'}`,
+            background: isDragActive ? 'rgba(0,229,200,0.06)' : 'rgba(0,0,0,0.3)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
+            transition: 'all 0.15s', flexShrink: 0,
+          }}
+        >
+          <input {...getInputProps()} />
+          <Upload size={14} style={{ color: 'rgba(0,229,200,0.4)' }} />
+          <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 7, color: 'rgba(0,229,200,0.35)' }}>ADD</span>
+        </div>
+      )}
+      {account.photoPreviews.map((src, i) => (
+        <div key={i} style={{ position: 'relative', width: 64, height: 64, borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(0,229,200,0.2)', flexShrink: 0 }}>
+          <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <button
+            type="button" onClick={() => remove(i)}
+            style={{ position: 'absolute', top: 2, right: 2, width: 16, height: 16, borderRadius: '50%', background: 'rgba(0,0,0,0.85)', border: 'none', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <X size={8} />
+          </button>
+          {i === 0 && <div style={{ position: 'absolute', bottom: 2, left: 2, background: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: 2, fontFamily: '"JetBrains Mono", monospace', fontSize: 6, color: '#00e5c8' }}>MAIN</div>}
+        </div>
+      ))}
+      {account.photos.length === 0 && (
+        <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(239,68,68,0.5)', alignSelf: 'center' }}>
+          At least 1 photo required
         </span>
       )}
     </div>
   )
 }
 
-function parseProxies(raw: string): string[] {
-  return raw.split('\n').map(l => l.trim()).filter(l => l.length > 0)
+// ─── Account row ─────────────────────────────────────────────────────────────
+
+const CELL: React.CSSProperties = {
+  padding: '0 6px',
+  fontFamily: '"JetBrains Mono", monospace',
 }
 
-function validateProxy(line: string): boolean {
-  // host:port:user:pass  OR  host:port
-  const parts = line.split(':')
-  return parts.length >= 2 && parts[0].length > 0 && !isNaN(parseInt(parts[1]))
+const INPUT_STYLE: React.CSSProperties = {
+  width: '100%',
+  background: 'rgba(0,0,0,0.5)',
+  border: '1px solid rgba(0,229,200,0.1)',
+  borderRadius: 5,
+  color: '#e0e0e0',
+  fontFamily: '"JetBrains Mono", monospace',
+  fontSize: 11,
+  padding: '6px 8px',
+  outline: 'none',
+}
+
+function AccountRow({
+  account, index, onChange, onCopyDown, isLast,
+}: {
+  account: AccountDraft
+  index: number
+  onChange: (updates: Partial<AccountDraft>) => void
+  onCopyDown: (field: keyof AccountDraft, value: unknown) => void
+  isLast: boolean
+}) {
+  const ready = isReady(account)
+  const proxyOk = account.proxy.trim().length > 0 && isValidProxy(account.proxy.trim())
+  const proxyBad = account.proxy.trim().length > 0 && !isValidProxy(account.proxy.trim())
+
+  return (
+    <>
+      {/* Main data row */}
+      <tr style={{
+        borderBottom: account.expanded ? 'none' : '1px solid rgba(0,229,200,0.05)',
+        background: account.expanded ? 'rgba(0,229,200,0.02)' : 'transparent',
+      }}>
+        {/* # */}
+        <td style={{ ...CELL, width: 40, textAlign: 'center', padding: '8px 4px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: ready ? '#00e5c8' : 'rgba(224,224,224,0.3)', fontWeight: 700 }}>
+              {String(index + 1).padStart(2, '0')}
+            </span>
+            {ready && <CheckCircle2 size={10} style={{ color: '#00e5c8' }} />}
+          </div>
+        </td>
+
+        {/* Geelark Name */}
+        <td style={{ ...CELL, width: 160 }}>
+          <div style={{ position: 'relative' }}>
+            <input
+              type="text"
+              value={account.profile_name}
+              onChange={e => onChange({ profile_name: e.target.value })}
+              placeholder="@handle or Order#123"
+              style={{ ...INPUT_STYLE, borderColor: account.profile_name ? 'rgba(0,229,200,0.2)' : 'rgba(239,68,68,0.2)' }}
+            />
+            {account.profile_name && !isLast && (
+              <button
+                type="button"
+                title="Copy value to all accounts below"
+                onClick={() => onCopyDown('profile_name', account.profile_name)}
+                style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,229,200,0.3)', padding: 0 }}
+              >
+                <Copy size={9} />
+              </button>
+            )}
+          </div>
+        </td>
+
+        {/* Note (optional) */}
+        <td style={{ ...CELL, width: 120 }}>
+          <input
+            type="text"
+            value={account.profile_note}
+            onChange={e => onChange({ profile_note: e.target.value })}
+            placeholder="optional"
+            style={{ ...INPUT_STYLE, borderColor: 'rgba(255,255,255,0.06)' }}
+          />
+        </td>
+
+        {/* Bumble Name */}
+        <td style={{ ...CELL, width: 130 }}>
+          <div style={{ position: 'relative' }}>
+            <input
+              type="text"
+              value={account.desired_name}
+              onChange={e => onChange({ desired_name: e.target.value })}
+              placeholder="Emma"
+              style={{ ...INPUT_STYLE, borderColor: account.desired_name ? 'rgba(0,229,200,0.2)' : 'rgba(239,68,68,0.2)' }}
+            />
+            {account.desired_name && !isLast && (
+              <button
+                type="button"
+                title="Copy to all below"
+                onClick={() => onCopyDown('desired_name', account.desired_name)}
+                style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,229,200,0.3)', padding: 0 }}
+              >
+                <Copy size={9} />
+              </button>
+            )}
+          </div>
+        </td>
+
+        {/* Birthday */}
+        <td style={{ ...CELL, width: 130 }}>
+          <div style={{ position: 'relative' }}>
+            <input
+              type="date"
+              value={account.birthday}
+              onChange={e => onChange({ birthday: e.target.value })}
+              style={{ ...INPUT_STYLE, colorScheme: 'dark', borderColor: account.birthday ? 'rgba(0,229,200,0.2)' : 'rgba(239,68,68,0.2)' }}
+            />
+            {account.birthday && !isLast && (
+              <button
+                type="button"
+                title="Copy to all below"
+                onClick={() => onCopyDown('birthday', account.birthday)}
+                style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,229,200,0.3)', padding: 0 }}
+              >
+                <Copy size={9} />
+              </button>
+            )}
+          </div>
+        </td>
+
+        {/* Gender */}
+        <td style={{ ...CELL, width: 72 }}>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {(['F', 'M'] as const).map(g => (
+              <button
+                key={g} type="button"
+                onClick={() => onChange({ gender: g === 'F' ? 'female' : 'male' })}
+                style={{
+                  flex: 1, padding: '5px 0', borderRadius: 4,
+                  fontFamily: '"JetBrains Mono", monospace', fontSize: 10, fontWeight: 700, cursor: 'pointer',
+                  border: (g === 'F' ? 'female' : 'male') === account.gender ? '1px solid rgba(0,229,200,0.5)' : '1px solid rgba(255,255,255,0.07)',
+                  background: (g === 'F' ? 'female' : 'male') === account.gender ? 'rgba(0,229,200,0.1)' : 'transparent',
+                  color: (g === 'F' ? 'female' : 'male') === account.gender ? '#00e5c8' : 'rgba(224,224,224,0.3)',
+                }}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
+        </td>
+
+        {/* Proxy */}
+        <td style={{ ...CELL, width: 200 }}>
+          <input
+            type="text"
+            value={account.proxy}
+            onChange={e => onChange({ proxy: e.target.value })}
+            placeholder="host:port:user:pass"
+            style={{
+              ...INPUT_STYLE,
+              fontSize: 10,
+              borderColor: proxyBad ? 'rgba(239,68,68,0.4)' : proxyOk ? 'rgba(0,229,200,0.25)' : 'rgba(239,68,68,0.2)',
+              color: proxyBad ? '#ef4444' : '#e0e0e0',
+            }}
+          />
+        </td>
+
+        {/* Photos */}
+        <td style={{ ...CELL, width: 80, textAlign: 'center' }}>
+          <button
+            type="button"
+            onClick={() => onChange({ expanded: !account.expanded })}
+            style={{
+              background: account.photos.length > 0 ? 'rgba(0,229,200,0.08)' : 'rgba(239,68,68,0.06)',
+              border: account.photos.length > 0 ? '1px solid rgba(0,229,200,0.2)' : '1px solid rgba(239,68,68,0.15)',
+              borderRadius: 6, padding: '5px 8px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 5, margin: '0 auto',
+            }}
+          >
+            <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: account.photos.length > 0 ? '#00e5c8' : 'rgba(239,68,68,0.6)', fontWeight: 700 }}>
+              {account.photos.length}/{MAX_PHOTOS}
+            </span>
+            {account.expanded
+              ? <ChevronDown size={9} style={{ color: 'rgba(0,229,200,0.5)' }} />
+              : <ChevronRight size={9} style={{ color: 'rgba(0,229,200,0.3)' }} />
+            }
+          </button>
+        </td>
+      </tr>
+
+      {/* Expanded photo row */}
+      {account.expanded && (
+        <tr style={{ borderBottom: '1px solid rgba(0,229,200,0.05)', background: 'rgba(0,0,0,0.3)' }}>
+          <td colSpan={8} style={{ padding: '12px 16px 14px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 20 }}>
+              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.4)', letterSpacing: '0.12em', paddingTop: 4, flexShrink: 0 }}>
+                PHOTOS
+              </div>
+              <PhotoUploader account={account} onChange={onChange} />
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
+  )
 }
 
 // ─── Main page ────────────────────────────────────────────────────────────────
@@ -94,20 +349,14 @@ export default function CreateJobPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  const [form, setForm] = useState({
-    accounts_count: 1,
-    desired_name: '',
-    birthday: '',
-    gender: 'female' as 'male' | 'female',
-    country: 'TH',
-    proxies_raw: '',
-  })
-  const [photos, setPhotos] = useState<File[]>([])
-  const [photoPreviews, setPhotoPreviews] = useState<string[]>([])
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [phase, setPhase] = useState<'setup' | 'configure'>('setup')
+  const [batchSize, setBatchSize] = useState(3)
+  const [country] = useState('TH')
+  const [accounts, setAccounts] = useState<AccountDraft[]>([])
   const [credits, setCredits] = useState<number | null>(null)
-  const [previewTab, setPreviewTab] = useState<'pipeline' | 'simulation'>('pipeline')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const tableRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     supabase.from('user_settings').select('credits').single().then(({ data }) => {
@@ -115,38 +364,37 @@ export default function CreateJobPage() {
     })
   }, [])
 
-  const onDrop = useCallback((accepted: File[]) => {
-    const remaining = MAX_PHOTOS - photos.length
-    const toAdd = accepted.slice(0, remaining)
-    setPhotos(prev => [...prev, ...toAdd])
-    setPhotoPreviews(prev => [...prev, ...toAdd.map(f => URL.createObjectURL(f))])
-  }, [photos])
+  const initBatch = () => {
+    const fresh: AccountDraft[] = Array.from({ length: batchSize }, (_, i) => makeAccount(i))
+    setAccounts(fresh)
+    setPhase('configure')
+    setTimeout(() => tableRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+  }
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop, accept: { 'image/*': [] }, maxFiles: MAX_PHOTOS,
-    disabled: photos.length >= MAX_PHOTOS,
-  })
+  const updateAccount = (id: string, updates: Partial<AccountDraft>) => {
+    setAccounts(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a))
+  }
 
-  const removePhoto = (i: number) => {
-    URL.revokeObjectURL(photoPreviews[i])
-    setPhotos(p => p.filter((_, idx) => idx !== i))
-    setPhotoPreviews(p => p.filter((_, idx) => idx !== i))
+  // Copy a field value from row i downward to all subsequent rows
+  const copyDown = (fromId: string, field: keyof AccountDraft, value: unknown) => {
+    setAccounts(prev => {
+      const idx = prev.findIndex(a => a.id === fromId)
+      if (idx === -1) return prev
+      return prev.map((a, i) => i > idx ? { ...a, [field]: value } : a)
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    if ((credits ?? 0) === 0) { setError('No credits available. Top up to launch jobs.'); return }
-    if (photos.length === 0) { setError('Upload at least one profile photo'); return }
-    if (!form.desired_name.trim()) { setError('Display name is required'); return }
-    if (!form.birthday) { setError('Birthday is required'); return }
 
-    const proxies = parseProxies(form.proxies_raw)
-    if (proxies.length === 0) { setError('At least one proxy is required'); return }
-    const invalidProxy = proxies.find(p => !validateProxy(p))
-    if (invalidProxy) { setError(`Invalid proxy format: "${invalidProxy}" — expected host:port:user:pass`); return }
-    if (proxies.length < form.accounts_count) {
-      setError(`You need at least ${form.accounts_count} proxy line${form.accounts_count > 1 ? 's' : ''} (one per account). You provided ${proxies.length}.`)
+    if ((credits ?? 0) === 0) { setError('No credits available. Top up to launch jobs.'); return }
+    const cost = accounts.length * CREDITS_PER_ACCOUNT
+    if ((credits ?? 0) < cost) { setError(`Insufficient credits. Need ${cost}, you have ${credits}.`); return }
+
+    const notReady = accounts.filter(a => !isReady(a))
+    if (notReady.length > 0) {
+      setError(`${notReady.length} account${notReady.length > 1 ? 's' : ''} are incomplete. Check all required fields and photos.`)
       return
     }
 
@@ -156,8 +404,9 @@ export default function CreateJobPage() {
       if (!user) throw new Error('Not authenticated')
 
       const { data: settings } = await supabase.from('user_settings').select('credits').eq('user_id', user.id).single()
-      if ((settings?.credits ?? 0) < form.accounts_count) {
-        setError(`Insufficient credits. You have ${settings?.credits ?? 0}, need ${form.accounts_count}.`)
+      const actualCost = accounts.length * CREDITS_PER_ACCOUNT
+      if ((settings?.credits ?? 0) < actualCost) {
+        setError(`Insufficient credits. Need ${actualCost}, have ${settings?.credits ?? 0}.`)
         setLoading(false)
         return
       }
@@ -165,47 +414,54 @@ export default function CreateJobPage() {
       const { data: job, error: jobErr } = await supabase.from('jobs').insert({
         user_id: user.id,
         status: 'queued',
-        total_accounts: form.accounts_count,
+        total_accounts: accounts.length,
         completed_accounts: 0,
         failed_accounts: 0,
-        credits_reserved: form.accounts_count,
+        credits_reserved: actualCost,
         credits_charged: 0,
         config: {
-          accounts_count: form.accounts_count,
-          desired_name: form.desired_name,
-          birthday: form.birthday,
-          gender: form.gender,
-          country: form.country,
-          proxies,
-          photos: [],
+          country,
+          accounts: accounts.map(a => ({
+            profile_name: a.profile_name,
+            profile_note: a.profile_note,
+            desired_name: a.desired_name,
+            birthday: a.birthday,
+            gender: a.gender,
+            proxy: a.proxy,
+            photos: [],
+          })),
         },
         started_at: null, completed_at: null, worker_id: null, error_message: null,
       }).select().single()
       if (jobErr) throw jobErr
 
-      const storagePaths: string[] = []
-      for (let i = 0; i < photos.length; i++) {
-        const file = photos[i]
-        const path = `${user.id}/${job.id}/${i}_${file.name}`
-        const { error: upErr } = await supabase.storage.from('account-photos').upload(path, file)
-        if (upErr) throw upErr
-        storagePaths.push(path)
-        await supabase.from('account_photos').insert({
-          account_id: job.id, job_id: job.id, user_id: user.id,
-          storage_path: path, original_filename: file.name, order_index: i,
-        })
-      }
+      // Upload photos per account
+      const accountsWithPhotos = await Promise.all(accounts.map(async (a, ai) => {
+        const paths: string[] = []
+        for (let pi = 0; pi < a.photos.length; pi++) {
+          const file = a.photos[pi]
+          const path = `${user.id}/${job.id}/acc${ai}_${pi}_${file.name}`
+          const { error: upErr } = await supabase.storage.from('account-photos').upload(path, file)
+          if (upErr) throw upErr
+          paths.push(path)
+          await supabase.from('account_photos').insert({
+            account_id: job.id, job_id: job.id, user_id: user.id,
+            storage_path: path, original_filename: file.name, order_index: pi,
+          })
+        }
+        return {
+          profile_name: a.profile_name,
+          profile_note: a.profile_note,
+          desired_name: a.desired_name,
+          birthday: a.birthday,
+          gender: a.gender,
+          proxy: a.proxy,
+          photos: paths,
+        }
+      }))
 
       await supabase.from('jobs').update({
-        config: {
-          accounts_count: form.accounts_count,
-          desired_name: form.desired_name,
-          birthday: form.birthday,
-          gender: form.gender,
-          country: form.country,
-          proxies,
-          photos: storagePaths,
-        },
+        config: { country, accounts: accountsWithPhotos },
       }).eq('id', job.id)
 
       router.push(`/jobs/${job.id}`)
@@ -215,13 +471,11 @@ export default function CreateJobPage() {
     }
   }
 
-  const proxies = parseProxies(form.proxies_raw)
-  const proxyCount = proxies.length
-  const proxyValid = proxies.every(validateProxy)
-  const proxyError = proxyCount > 0 && !proxyValid
+  const readyCount = accounts.filter(isReady).length
+  const totalCost = accounts.length * CREDITS_PER_ACCOUNT
   const noCredits = credits !== null && credits === 0
-  const insufficientCredits = credits !== null && credits < form.accounts_count && credits > 0
-  const canSubmit = !noCredits && !insufficientCredits && !loading
+  const insufficientCredits = credits !== null && credits < totalCost && credits > 0
+  const canSubmit = !noCredits && !insufficientCredits && !loading && readyCount === accounts.length && accounts.length > 0
 
   return (
     <div style={{ padding: '2.5rem', minHeight: '100vh', background: 'transparent' }}>
@@ -230,53 +484,38 @@ export default function CreateJobPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
         <div>
           <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.4)', letterSpacing: '0.2em', marginBottom: 6 }}>
-            NEW JOB
+            NEW BATCH JOB · TRIAL
           </div>
           <h1 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1.1rem', color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>
-            Launch Automation Job
+            Launch Automation Batch
           </h1>
           <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(224,224,224,0.25)', marginTop: 6 }}>
             {credits === null
               ? 'Loading…'
               : noCredits
                 ? <span style={{ color: 'rgba(251,191,36,0.6)' }}>0 credits — top up to launch</span>
-                : <span>Available: <span style={{ color: '#00e5c8', fontWeight: 700 }}>{credits}</span> credits · 1 credit = 1 account · charged on success only</span>
+                : <span>
+                    Available: <span style={{ color: '#00e5c8', fontWeight: 700 }}>{credits}</span> credits
+                    {' · '}<span style={{ color: 'rgba(168,85,247,0.7)' }}>2 credits / account · trial period</span>
+                  </span>
             }
           </div>
         </div>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8,
-          border: `1px solid ${noCredits ? 'rgba(251,191,36,0.2)' : 'rgba(0,229,200,0.15)'}`,
-          background: noCredits ? 'rgba(251,191,36,0.04)' : 'rgba(0,229,200,0.04)',
-        }}>
-          {noCredits ? <Lock size={12} style={{ color: 'rgba(251,191,36,0.5)' }} /> : <Zap size={12} style={{ color: '#00e5c8' }} />}
-          <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: noCredits ? 'rgba(251,191,36,0.5)' : 'rgba(0,229,200,0.6)', letterSpacing: '0.06em' }}>
-            {noCredits ? 'LOCKED — NO CREDITS' : `${form.accounts_count} credit${form.accounts_count !== 1 ? 's' : ''} reserved`}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: 'rgba(168,85,247,0.2) 1px solid', background: 'rgba(168,85,247,0.04)' }}>
+          <Zap size={11} style={{ color: 'rgba(168,85,247,0.6)' }} />
+          <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'rgba(168,85,247,0.6)', letterSpacing: '0.06em' }}>
+            TRIAL · MAX {TRIAL_MAX} ACCOUNTS
           </span>
         </div>
       </div>
 
       {/* ── No credits banner ── */}
       {noCredits && (
-        <div style={{
-          borderRadius: 12, border: '1px solid rgba(251,191,36,0.25)',
-          background: 'rgba(251,191,36,0.04)', padding: '1.1rem 1.5rem',
-          display: 'flex', alignItems: 'center', gap: 14, marginBottom: '1.5rem',
-        }}>
-          <div style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid rgba(251,191,36,0.3)', background: 'rgba(251,191,36,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <AlertTriangle size={16} style={{ color: '#fbbf24' }} />
-          </div>
-          <div>
-            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, fontWeight: 700, color: '#fbbf24', letterSpacing: '0.08em', marginBottom: 4 }}>
-              PREVIEW MODE — NO CREDITS
-            </div>
-            <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: 'rgba(224,224,224,0.5)' }}>
-              Explore the full configuration below. To launch accounts, contact{' '}
-              <span style={{ color: '#fbbf24', fontWeight: 600 }}>@aidetectionkiller</span> on Telegram to top up via crypto.
-            </div>
-          </div>
-          <div style={{ marginLeft: 'auto', padding: '3px 10px', borderRadius: 4, border: '1px solid rgba(251,191,36,0.3)', background: 'rgba(251,191,36,0.06)', fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: '#fbbf24', letterSpacing: '0.12em', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
-            <Eye size={9} /> PREVIEW
+        <div style={{ borderRadius: 12, border: '1px solid rgba(251,191,36,0.25)', background: 'rgba(251,191,36,0.04)', padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: 14, marginBottom: '1.5rem' }}>
+          <AlertTriangle size={16} style={{ color: '#fbbf24', flexShrink: 0 }} />
+          <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: 'rgba(224,224,224,0.5)' }}>
+            <span style={{ color: '#fbbf24', fontWeight: 700, fontFamily: '"JetBrains Mono", monospace', fontSize: 10 }}>NO CREDITS</span> — You can configure your batch in preview mode. To launch, contact{' '}
+            <span style={{ color: '#fbbf24', fontWeight: 600 }}>@aidetectionkiller</span> on Telegram to top up via crypto.
           </div>
         </div>
       )}
@@ -289,379 +528,241 @@ export default function CreateJobPage() {
       )}
 
       <form onSubmit={handleSubmit}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 380px', gap: '1.25rem' }}>
 
-          {/* ── Column 1: Config + Profile ── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        {/* ── Phase 1: Batch setup ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
 
-            {/* Job count */}
-            <div style={{ borderRadius: 14, padding: '1.6rem', border: '1px solid rgba(0,229,200,0.1)', background: 'rgba(0,229,200,0.02)' }}>
-              <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, color: 'rgba(0,229,200,0.5)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: '1.1rem' }}>
-                Job Configuration
-              </div>
-              <FieldLabel>Number of Accounts</FieldLabel>
-              <input
-                type="number" min={1} max={credits ?? 100}
-                value={form.accounts_count}
-                onChange={e => setForm(f => ({ ...f, accounts_count: parseInt(e.target.value) || 1 }))}
-                className="matrix-input"
-                required
-              />
-              <div style={{ marginTop: 5, fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: insufficientCredits ? '#ef4444' : 'rgba(0,229,200,0.3)' }}>
-                {insufficientCredits
-                  ? `⚠ Need ${form.accounts_count} credits, you have ${credits}`
-                  : `${form.accounts_count} credit${form.accounts_count !== 1 ? 's' : ''} · charged on success only`}
-              </div>
+          {/* Batch size */}
+          <div style={{ borderRadius: 14, padding: '1.5rem', border: '1px solid rgba(0,229,200,0.1)', background: 'rgba(0,229,200,0.02)' }}>
+            <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.45)', letterSpacing: '0.2em', marginBottom: '1rem', textTransform: 'uppercase' }}>
+              Batch Size
             </div>
-
-            {/* Country */}
-            <div style={{ borderRadius: 14, padding: '1.6rem', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.35)' }}>
-              <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, color: 'rgba(0,229,200,0.5)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: '1.1rem' }}>
-                Target Country
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: '1rem' }}>
-                {COUNTRIES.map(c => (
-                  <button
-                    key={c.code}
-                    type="button"
-                    disabled={!c.available}
-                    onClick={() => c.available && setForm(f => ({ ...f, country: c.code }))}
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '10px 14px', borderRadius: 8, cursor: c.available ? 'pointer' : 'not-allowed',
-                      border: form.country === c.code
-                        ? '1px solid rgba(0,229,200,0.5)'
-                        : c.available
-                          ? '1px solid rgba(255,255,255,0.08)'
-                          : '1px solid rgba(255,255,255,0.04)',
-                      background: form.country === c.code
-                        ? 'rgba(0,229,200,0.08)'
-                        : 'rgba(0,0,0,0.3)',
-                      opacity: c.available ? 1 : 0.45,
-                      transition: 'all 0.15s',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ fontSize: 18, lineHeight: 1 }}>{c.flag}</span>
-                      <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: form.country === c.code ? '#00e5c8' : c.available ? 'rgba(224,224,224,0.7)' : 'rgba(224,224,224,0.3)', fontWeight: form.country === c.code ? 700 : 400 }}>
-                        {c.name}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      {form.country === c.code && <CheckCircle2 size={13} style={{ color: '#00e5c8' }} />}
-                      {!c.available && (
-                        <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 8, color: 'rgba(224,224,224,0.25)', letterSpacing: '0.08em' }}>
-                          SOON
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Thailand trial note */}
-              <div style={{ display: 'flex', gap: 8, padding: '8px 12px', borderRadius: 7, border: '1px solid rgba(251,191,36,0.15)', background: 'rgba(251,191,36,0.03)' }}>
-                <Info size={12} style={{ color: 'rgba(251,191,36,0.5)', flexShrink: 0, marginTop: 1 }} />
-                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(251,191,36,0.5)', lineHeight: 1.6 }}>
-                  Trial: Thailand only. After creation, manually change location to your desired country (e.g. USA) via app settings.
-                </div>
-              </div>
-            </div>
-
-            {/* Profile */}
-            <div style={{ borderRadius: 14, padding: '1.6rem', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.35)' }}>
-              <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, color: 'rgba(0,229,200,0.5)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: '1.1rem' }}>
-                Profile Details
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-
-                <div>
-                  <FieldLabel>Display Name</FieldLabel>
-                  <input
-                    type="text" value={form.desired_name}
-                    onChange={e => setForm(f => ({ ...f, desired_name: e.target.value }))}
-                    placeholder="Emma"
-                    className="matrix-input" required={!noCredits}
-                  />
-                </div>
-
-                <div>
-                  <FieldLabel>Birthday</FieldLabel>
-                  <input
-                    type="date" value={form.birthday}
-                    onChange={e => setForm(f => ({ ...f, birthday: e.target.value }))}
-                    className="matrix-input" style={{ colorScheme: 'dark' }}
-                    required={!noCredits}
-                  />
-                </div>
-
-                <div>
-                  <FieldLabel>Gender</FieldLabel>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {(['female', 'male'] as const).map(g => (
-                      <button
-                        key={g} type="button"
-                        onClick={() => setForm(f => ({ ...f, gender: g }))}
-                        style={{
-                          flex: 1, padding: '10px 0', borderRadius: 8, cursor: 'pointer',
-                          fontFamily: '"JetBrains Mono", monospace', fontSize: 11, fontWeight: 700,
-                          letterSpacing: '0.1em', textTransform: 'uppercase',
-                          border: form.gender === g ? '1px solid rgba(0,229,200,0.5)' : '1px solid rgba(255,255,255,0.08)',
-                          background: form.gender === g ? 'rgba(0,229,200,0.1)' : 'rgba(0,0,0,0.4)',
-                          color: form.gender === g ? '#00e5c8' : 'rgba(224,224,224,0.3)',
-                          boxShadow: form.gender === g ? '0 0 14px rgba(0,229,200,0.2)' : 'none',
-                          transition: 'all 0.15s',
-                        }}
-                      >
-                        {g === 'female' ? '♀ Female' : '♂ Male'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-
-          {/* ── Column 2: Proxies + Photos + Submit ── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-
-            {/* Proxies */}
-            <div style={{ borderRadius: 14, padding: '1.6rem', border: `1px solid ${proxyError ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.05)'}`, background: 'rgba(0,0,0,0.35)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.1rem' }}>
-                <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, color: 'rgba(0,229,200,0.5)', letterSpacing: '0.18em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Server size={12} style={{ color: 'rgba(0,229,200,0.4)' }} />
-                  Proxies
-                </div>
-                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: proxyError ? '#ef4444' : proxyCount > 0 ? '#00e5c8' : 'rgba(224,224,224,0.25)' }}>
-                  {proxyCount > 0 ? `${proxyCount} line${proxyCount > 1 ? 's' : ''}${proxyError ? ' · invalid format' : ' · valid'}` : 'none'}
-                </span>
-              </div>
-
-              <textarea
-                value={form.proxies_raw}
-                onChange={e => setForm(f => ({ ...f, proxies_raw: e.target.value }))}
-                placeholder={'host:port:user:pass\nhost:port:user:pass\n…'}
-                rows={6}
-                className="matrix-input"
-                style={{ resize: 'vertical', fontFamily: '"JetBrains Mono", monospace', fontSize: 10 }}
-                required={!noCredits}
-              />
-
-              <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.3)', letterSpacing: '0.04em' }}>
-                  Format: <span style={{ color: 'rgba(0,229,200,0.5)' }}>host:port:username:password</span> — one per line
-                </div>
-                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(224,224,224,0.2)' }}>
-                  One proxy per account · must match selected country (Thailand)
-                </div>
-                {proxyCount > 0 && form.accounts_count > proxyCount && (
-                  <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: '#ef4444' }}>
-                    ⚠ {form.accounts_count - proxyCount} more proxy line{form.accounts_count - proxyCount > 1 ? 's' : ''} needed
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Photos */}
-            <div style={{ borderRadius: 14, padding: '1.6rem', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.35)', flex: 1 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.1rem' }}>
-                <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, color: 'rgba(0,229,200,0.5)', letterSpacing: '0.18em', textTransform: 'uppercase' }}>
-                  Profile Photos
-                </div>
-                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: photos.length > 0 ? '#00e5c8' : 'rgba(224,224,224,0.25)' }}>
-                  {photos.length}/{MAX_PHOTOS}
-                </span>
-              </div>
-
-              {photos.length < MAX_PHOTOS && (
-                <div
-                  {...getRootProps()}
-                  style={{
-                    marginBottom: 14, cursor: 'pointer', borderRadius: 10,
-                    border: `2px dashed ${isDragActive ? '#00e5c8' : 'rgba(0,229,200,0.2)'}`,
-                    background: isDragActive ? 'rgba(0,229,200,0.06)' : 'transparent',
-                    padding: '1.5rem', textAlign: 'center', transition: 'all 0.15s',
-                  }}
-                >
-                  <input {...getInputProps()} />
-                  <Upload size={18} style={{ color: 'rgba(0,229,200,0.35)', margin: '0 auto 8px', display: 'block' }} />
-                  <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'rgba(0,229,200,0.45)' }}>
-                    {isDragActive ? 'Drop here' : 'Drag & drop or click'}
-                  </div>
-                  <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.25)', marginTop: 4 }}>
-                    JPG, PNG · up to {MAX_PHOTOS} photos
-                  </div>
-                </div>
-              )}
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-                {photoPreviews.map((src, i) => (
-                  <div key={i} style={{ position: 'relative', aspectRatio: '1', overflow: 'hidden', borderRadius: 8, border: '1px solid rgba(0,229,200,0.15)' }}>
-                    <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <button
-                      type="button" onClick={() => removePhoto(i)}
-                      style={{ position: 'absolute', top: 4, right: 4, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,0.85)', border: 'none', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    >
-                      <X size={10} />
-                    </button>
-                    {i === 0 && (
-                      <div style={{ position: 'absolute', bottom: 4, left: 4, background: 'rgba(0,0,0,0.85)', padding: '2px 5px', borderRadius: 3, fontFamily: '"JetBrains Mono", monospace', fontSize: 8, color: '#00e5c8' }}>
-                        MAIN
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              style={{
-                background: noCredits
-                  ? 'rgba(255,255,255,0.04)'
-                  : loading
-                    ? 'rgba(0,229,200,0.3)'
-                    : 'linear-gradient(135deg, #00b8d9, #00e5c8)',
-                color: noCredits ? 'rgba(224,224,224,0.3)' : '#000',
-                fontFamily: '"JetBrains Mono", monospace',
-                fontWeight: 700, fontSize: 12, letterSpacing: '0.12em',
-                padding: '15px 28px', borderRadius: 10,
-                border: noCredits ? '1px solid rgba(255,255,255,0.08)' : 'none',
-                cursor: canSubmit ? 'pointer' : 'not-allowed',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                boxShadow: canSubmit ? '0 0 28px rgba(0,229,200,0.3)' : 'none',
-                textTransform: 'uppercase', transition: 'all 0.2s',
+            <input
+              type="number" min={1} max={TRIAL_MAX}
+              value={batchSize}
+              onChange={e => {
+                const v = Math.min(TRIAL_MAX, Math.max(1, parseInt(e.target.value) || 1))
+                setBatchSize(v)
+                if (phase === 'configure') {
+                  setAccounts(prev => {
+                    if (v > prev.length) return [...prev, ...Array.from({ length: v - prev.length }, (_, i) => makeAccount(prev.length + i))]
+                    return prev.slice(0, v)
+                  })
+                }
               }}
-            >
-              {noCredits
-                ? <><Lock size={13} /> No Credits — Top Up to Launch</>
-                : loading
-                  ? 'Queuing job…'
-                  : <><PlusCircle size={13} /> Launch {form.accounts_count} Account{form.accounts_count !== 1 ? 's' : ''}</>
-              }
-            </button>
-
-            {/* Cost breakdown */}
-            {!noCredits && (
-              <div style={{ borderRadius: 10, padding: '1rem 1.25rem', border: '1px solid rgba(0,229,200,0.07)', background: 'rgba(0,229,200,0.02)' }}>
-                {[
-                  { label: 'Accounts', value: `${form.accounts_count}×` },
-                  { label: 'Price per account', value: '1 credit' },
-                  { label: 'Proxies ready', value: proxyCount >= form.accounts_count ? `${proxyCount} ✓` : `${proxyCount}/${form.accounts_count}` },
-                ].map(row => (
-                  <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                    <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(224,224,224,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{row.label}</span>
-                    <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'rgba(0,229,200,0.6)', fontWeight: 700 }}>{row.value}</span>
-                  </div>
-                ))}
-                <div style={{ height: 1, background: 'rgba(0,229,200,0.07)', margin: '8px 0' }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(224,224,224,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Total</span>
-                  <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: 18, color: '#00e5c8' }}>{form.accounts_count} cr</span>
-                </div>
-                <div style={{ marginTop: 6, fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.3)' }}>
-                  Charged only when account is confirmed active
-                </div>
-              </div>
-            )}
-
+              className="matrix-input"
+              style={{ fontSize: '1.8rem', fontWeight: 900, textAlign: 'center', padding: '10px' }}
+            />
+            <div style={{ marginTop: 8, fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.3)' }}>
+              Max {TRIAL_MAX} accounts per batch · trial period
+            </div>
           </div>
 
-          {/* ── Column 3: Pipeline / Simulation ── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-
-            {/* Tab switcher */}
-            <div style={{ display: 'flex', gap: 6, borderRadius: 8, border: '1px solid rgba(0,229,200,0.1)', padding: 4, background: 'rgba(0,0,0,0.4)' }}>
-              {(['pipeline', 'simulation'] as const).map(tab => (
-                <button
-                  key={tab} type="button"
-                  onClick={() => setPreviewTab(tab)}
-                  style={{
-                    flex: 1, padding: '7px', borderRadius: 6, border: 'none',
-                    background: previewTab === tab ? 'rgba(0,229,200,0.1)' : 'transparent',
-                    color: previewTab === tab ? '#00e5c8' : 'rgba(224,224,224,0.3)',
-                    fontFamily: '"JetBrains Mono", monospace', fontSize: 9,
-                    fontWeight: previewTab === tab ? 700 : 400,
-                    letterSpacing: '0.1em', textTransform: 'uppercase',
-                    cursor: 'pointer', transition: 'all 0.15s',
-                  }}
-                >
-                  {tab === 'pipeline' ? 'How It Works' : 'Preview'}
-                </button>
-              ))}
+          {/* Country */}
+          <div style={{ borderRadius: 14, padding: '1.5rem', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.35)' }}>
+            <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.45)', letterSpacing: '0.2em', marginBottom: '1rem', textTransform: 'uppercase' }}>
+              Target Country
             </div>
-
-            {previewTab === 'pipeline' ? (
-
-              <div style={{ borderRadius: 14, border: '1px solid rgba(0,229,200,0.08)', overflow: 'hidden' }}>
-                <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(0,229,200,0.06)', background: 'rgba(0,229,200,0.025)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.5)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-                    Automation Process
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {AVAILABLE_COUNTRIES.map(c => (
+                <div key={c.code} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(0,229,200,0.4)', background: 'rgba(0,229,200,0.08)' }}>
+                  <span style={{ fontSize: 18, lineHeight: 1 }}>{c.flag}</span>
+                  <div>
+                    <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: '#00e5c8', fontWeight: 700 }}>{c.name}</div>
+                    <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 8, color: 'rgba(0,229,200,0.4)' }}>{c.note}</div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <Globe size={10} style={{ color: 'rgba(0,229,200,0.3)' }} />
-                    <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.3)' }}>
-                      {COUNTRIES.find(c => c.code === form.country)?.flag} {COUNTRIES.find(c => c.code === form.country)?.name}
-                    </span>
-                  </div>
+                  <CheckCircle2 size={14} style={{ color: '#00e5c8', marginLeft: 'auto' }} />
                 </div>
+              ))}
+              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 2 }}>
+                {LOCKED_COUNTRIES.map(c => (
+                  <span key={c.code} style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(224,224,224,0.2)', padding: '2px 7px', borderRadius: 4, border: '1px solid rgba(255,255,255,0.04)' }}>
+                    {c.flag} {c.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
 
-                <div style={{ padding: '4px 0' }}>
-                  {PIPELINE_STAGES.map((s, i) => (
-                    <div
-                      key={s.n}
-                      style={{
-                        padding: '11px 16px',
-                        borderBottom: i < PIPELINE_STAGES.length - 1 ? '1px solid rgba(0,229,200,0.04)' : 'none',
-                        display: 'flex', gap: 12, alignItems: 'flex-start',
-                        background: s.highlight ? 'rgba(0,229,200,0.015)' : 'transparent',
-                      }}
-                    >
-                      <div style={{
-                        width: 22, height: 22, borderRadius: 6, flexShrink: 0,
-                        border: `1px solid ${s.highlight ? 'rgba(0,229,200,0.35)' : 'rgba(255,255,255,0.08)'}`,
-                        background: s.highlight ? 'rgba(0,229,200,0.07)' : 'rgba(0,0,0,0.4)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: s.highlight ? '0 0 8px rgba(0,229,200,0.12)' : 'none',
-                      }}>
-                        <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, fontWeight: 700, color: s.highlight ? '#00e5c8' : 'rgba(224,224,224,0.3)' }}>{s.n}</span>
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, fontWeight: 700, color: s.highlight ? '#e0e0e0' : 'rgba(224,224,224,0.7)', marginBottom: 3 }}>
-                          {s.label}
-                        </div>
-                        <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgba(224,224,224,0.4)', lineHeight: 1.5 }}>
-                          {s.desc}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div style={{ padding: '10px 16px', background: 'rgba(0,229,200,0.025)', borderTop: '1px solid rgba(0,229,200,0.06)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#00e5c8', boxShadow: '0 0 8px #00e5c8' }} />
-                  <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.45)', letterSpacing: '0.08em' }}>
-                    Credit charged at step 7 only — account must be confirmed active
+          {/* Cost + trial info */}
+          <div style={{ borderRadius: 14, padding: '1.5rem', border: '1px solid rgba(168,85,247,0.1)', background: 'rgba(168,85,247,0.02)' }}>
+            <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(168,85,247,0.5)', letterSpacing: '0.2em', marginBottom: '1rem', textTransform: 'uppercase' }}>
+              Cost Estimate
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                { label: 'Accounts', value: `${batchSize}×` },
+                { label: 'Rate', value: `${CREDITS_PER_ACCOUNT} credits each` },
+                { label: 'Total', value: `${batchSize * CREDITS_PER_ACCOUNT} credits`, big: true },
+              ].map(r => (
+                <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(224,224,224,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{r.label}</span>
+                  <span style={r.big ? { fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: 22, color: '#a855f7' } : { fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'rgba(168,85,247,0.7)', fontWeight: 700 }}>
+                    {r.value}
                   </span>
                 </div>
-              </div>
-
-            ) : (
-
-              <div>
-                <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.4)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 10 }}>
-                  Live Preview
+              ))}
+              <div style={{ height: 1, background: 'rgba(168,85,247,0.07)', margin: '4px 0' }} />
+              {credits !== null && (
+                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: insufficientCredits ? '#ef4444' : 'rgba(0,229,200,0.4)' }}>
+                  {insufficientCredits
+                    ? `⚠ Need ${totalCost}, you have ${credits}`
+                    : `✓ ${credits} available — ${credits - totalCost} remaining after launch`
+                  }
                 </div>
-                <SimulationPanel />
+              )}
+              <div style={{ display: 'flex', gap: 6, padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(251,191,36,0.15)', background: 'rgba(251,191,36,0.03)', alignItems: 'flex-start' }}>
+                <Info size={10} style={{ color: 'rgba(251,191,36,0.5)', flexShrink: 0, marginTop: 1 }} />
+                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 8, color: 'rgba(251,191,36,0.45)', lineHeight: 1.6 }}>
+                  Trial rate · Charged only on confirmed active accounts
+                </span>
               </div>
-            )}
-
+            </div>
           </div>
         </div>
+
+        {/* ── Initialize batch button ── */}
+        {phase === 'setup' && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+            <button
+              type="button"
+              onClick={initBatch}
+              style={{
+                background: 'linear-gradient(135deg, #00b8d9, #00e5c8)',
+                color: '#000', fontFamily: '"JetBrains Mono", monospace',
+                fontWeight: 700, fontSize: 12, letterSpacing: '0.12em',
+                padding: '14px 40px', borderRadius: 10, border: 'none',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10,
+                boxShadow: '0 0 28px rgba(0,229,200,0.25)',
+                textTransform: 'uppercase',
+              }}
+            >
+              <PlusCircle size={14} />
+              Initialize {batchSize} Account{batchSize > 1 ? 's' : ''} →
+            </button>
+          </div>
+        )}
+
+        {/* ── Phase 2: Account configuration table ── */}
+        {phase === 'configure' && (
+          <div ref={tableRef}>
+            {/* Table header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.4)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+                  Account Configuration
+                </span>
+                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: readyCount === accounts.length ? '#00e5c8' : 'rgba(224,224,224,0.3)', padding: '2px 8px', borderRadius: 4, border: `1px solid ${readyCount === accounts.length ? 'rgba(0,229,200,0.3)' : 'rgba(255,255,255,0.06)'}`, background: readyCount === accounts.length ? 'rgba(0,229,200,0.07)' : 'transparent' }}>
+                  {readyCount}/{accounts.length} ready
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={initBatch}
+                style={{ background: 'none', border: '1px solid rgba(0,229,200,0.15)', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, color: 'rgba(0,229,200,0.4)', fontFamily: '"JetBrains Mono", monospace', fontSize: 9 }}
+              >
+                <RefreshCw size={9} /> Reset
+              </button>
+            </div>
+
+            {/* Info bar */}
+            <div style={{ display: 'flex', gap: 16, padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(0,229,200,0.06)', background: 'rgba(0,0,0,0.3)', marginBottom: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.4)', letterSpacing: '0.08em' }}>
+                <span style={{ color: '#00e5c8' }}>Geelark Name</span> — your internal reference shown in your Geelark dashboard (e.g. @handle, Order#123)
+              </div>
+              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(224,224,224,0.25)' }}>
+                Click <Copy size={9} style={{ display: 'inline', verticalAlign: 'middle' }} /> to copy a value to all rows below
+              </div>
+              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(224,224,224,0.25)' }}>
+                Click <span style={{ color: 'rgba(0,229,200,0.4)' }}>N/6</span> to upload photos for each account
+              </div>
+            </div>
+
+            {/* Scrollable table */}
+            <div style={{ overflowX: 'auto', borderRadius: 14, border: '1px solid rgba(0,229,200,0.08)' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 960 }}>
+                <thead>
+                  <tr style={{ background: 'rgba(0,229,200,0.03)', borderBottom: '1px solid rgba(0,229,200,0.06)' }}>
+                    {[
+                      { label: '#', w: 40 },
+                      { label: 'Geelark Name', w: 160, hint: 'internal ref' },
+                      { label: 'Note', w: 120, hint: 'optional' },
+                      { label: 'Display Name', w: 130, hint: 'in-app' },
+                      { label: 'Birthday', w: 130 },
+                      { label: 'Gender', w: 72 },
+                      { label: 'Proxy', w: 200, hint: 'host:port:user:pass' },
+                      { label: 'Photos', w: 80 },
+                    ].map(h => (
+                      <th key={h.label} style={{ padding: '10px 6px', textAlign: 'left', fontFamily: '"JetBrains Mono", monospace', fontSize: 8, color: 'rgba(0,229,200,0.4)', letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, width: h.w }}>
+                        {h.label}
+                        {h.hint && <span style={{ color: 'rgba(224,224,224,0.2)', marginLeft: 4 }}>· {h.hint}</span>}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {accounts.map((account, i) => (
+                    <AccountRow
+                      key={account.id}
+                      account={account}
+                      index={i}
+                      isLast={i === accounts.length - 1}
+                      onChange={updates => updateAccount(account.id, updates)}
+                      onCopyDown={(field, value) => copyDown(account.id, field, value)}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* ── Submit footer ── */}
+            <div style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.25rem 1.5rem', borderRadius: 14, border: `1px solid ${canSubmit ? 'rgba(0,229,200,0.15)' : 'rgba(255,255,255,0.05)'}`, background: canSubmit ? 'rgba(0,229,200,0.025)' : 'rgba(0,0,0,0.3)' }}>
+              {/* Status */}
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: canSubmit ? '#00e5c8' : 'rgba(224,224,224,0.4)', fontWeight: 700, marginBottom: 4 }}>
+                  {canSubmit
+                    ? `✓ All ${accounts.length} accounts configured — ready to launch`
+                    : `${readyCount}/${accounts.length} accounts ready · complete all required fields`
+                  }
+                </div>
+                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(224,224,224,0.25)' }}>
+                  {accounts.length} accounts × {CREDITS_PER_ACCOUNT} credits = <span style={{ color: 'rgba(168,85,247,0.7)', fontWeight: 700 }}>{totalCost} credits total</span>
+                  {' · '}charged only on confirmed active accounts
+                </div>
+              </div>
+
+              {/* Launch button */}
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                style={{
+                  background: noCredits
+                    ? 'rgba(255,255,255,0.04)'
+                    : canSubmit
+                      ? 'linear-gradient(135deg, #00b8d9, #00e5c8)'
+                      : 'rgba(255,255,255,0.06)',
+                  color: canSubmit && !noCredits ? '#000' : 'rgba(224,224,224,0.3)',
+                  fontFamily: '"JetBrains Mono", monospace',
+                  fontWeight: 700, fontSize: 12, letterSpacing: '0.12em',
+                  padding: '14px 32px', borderRadius: 10, border: 'none',
+                  cursor: canSubmit ? 'pointer' : 'not-allowed',
+                  display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0,
+                  boxShadow: canSubmit ? '0 0 28px rgba(0,229,200,0.3)' : 'none',
+                  textTransform: 'uppercase', transition: 'all 0.2s',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {noCredits
+                  ? <><Lock size={13} /> No Credits</>
+                  : loading
+                    ? <><RefreshCw size={13} style={{ animation: 'spin 1s linear infinite' }} /> Launching…</>
+                    : <><PlusCircle size={13} /> Launch {accounts.length} Account{accounts.length > 1 ? 's' : ''}</>
+                }
+              </button>
+            </div>
+          </div>
+        )}
+
       </form>
     </div>
   )

@@ -251,13 +251,19 @@ export type AccountPhoto = AccountPhotoRow
 export type AccountStatusEvent = AccountStatusEventRow
 export type CreditTransaction = CreditTransactionRow
 
+// Per-account config — one entry per Bumble account in the batch
+export interface AccountConfig {
+  profile_name: string       // Geelark dashboard label (e.g. @handle, Order#123)
+  profile_note: string       // Optional remarks shown in Geelark
+  desired_name: string       // Bumble display name
+  birthday: string           // YYYY-MM-DD
+  gender: 'male' | 'female'
+  proxy: string              // host:port:user:pass
+  photos: string[]           // Supabase storage paths
+}
+
 // Job config shape (stored as JSON in jobs.config)
 export interface JobConfig {
-  accounts_count: number
-  desired_name: string       // display name entered on the profile
-  birthday: string           // YYYY-MM-DD format
-  gender: 'male' | 'female'
   country: string            // ISO country code (e.g. 'TH')
-  proxies: string[]          // host:port:user:pass — one per account
-  photos: string[]           // Supabase storage paths
+  accounts: AccountConfig[]  // one entry per account in the batch
 }
