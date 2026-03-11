@@ -27,23 +27,24 @@ export async function POST(req: NextRequest) {
 
   const admin = await createAdminClient()
   const newBalance = Math.max(0, currentCredits + amount)
-  const action = amount < 0 ? 'Deduction' : 'Grant'
 
-  // 4. Update credits
+  // 4. Update credits — this is the critical operation
   const { error: e1 } = await admin
     .from('user_settings')
     .update({ credits: newBalance })
     .eq('user_id', userId)
   if (e1) return NextResponse.json({ error: e1.message }, { status: 500 })
 
-  // 5. Log transaction — only real columns: user_id, amount, reason, notes, account_id
-  const { error: e2 } = await admin.from('credit_transactions').insert({
+  // 5. Log transaction — best-effort, never blocks success response
+  const action = amount < 0 ? 'Deduction' : 'Grant'
+  await admin.from('credit_transactions').insert({
     user_id: userId,
     amount,
     reason: `Admin ${action.toLowerCase()} by ${user.email}`,
     notes: description || null,
+  }).then(({ error }) => {
+    if (error) console.error('[grant-credits] tx log failed (non-fatal):', error.message)
   })
-  if (e2) return NextResponse.json({ error: e2.message }, { status: 500 })
 
   return NextResponse.json({ newBalance })
 }
