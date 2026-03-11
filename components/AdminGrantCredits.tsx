@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { CheckCircle2, X } from 'lucide-react'
 
 interface Props {
@@ -16,7 +15,6 @@ export default function AdminGrantCredits({ userId, currentCredits, onClose, onS
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,29 +24,16 @@ export default function AdminGrantCredits({ userId, currentCredits, onClose, onS
 
     setLoading(true)
     try {
-      const newBalance = currentCredits + amt
-
-      const { error: e1 } = await supabase
-        .from('user_settings')
-        .update({ credits: newBalance })
-        .eq('user_id', userId)
-      if (e1) throw e1
-
-      const { data: { user: adminUser } } = await supabase.auth.getUser()
-      const { error: e2 } = await supabase.from('credit_transactions').insert({
-        user_id: userId,
-        type: 'admin_grant',
-        amount: amt,
-        balance_after: newBalance,
-        description: description || `Admin grant by ${adminUser?.email}`,
-        admin_user_id: adminUser?.id ?? null,
-        job_id: null,
-        account_id: null,
+      const res = await fetch('/api/admin/grant-credits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, amount: amt, currentCredits, description }),
       })
-      if (e2) throw e2
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Operation failed')
 
-      setSuccess(`${amt > 0 ? '+' : ''}${amt} credits · new balance: ${newBalance}`)
-      onSuccess(newBalance)
+      setSuccess(`${amt > 0 ? '+' : ''}${amt} credits · new balance: ${json.newBalance}`)
+      onSuccess(json.newBalance)
       setAmount('')
       setDescription('')
     } catch (err: unknown) {
