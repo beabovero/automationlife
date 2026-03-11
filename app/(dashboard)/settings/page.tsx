@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, Key, MessageCircle, Zap } from 'lucide-react'
 
 export default function SettingsPage() {
   const [geelarkKey, setGeelarkKey] = useState('')
@@ -31,35 +31,78 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-8">
-      <h1 className="mb-8 font-mono text-2xl font-bold text-white">Settings</h1>
+    <div style={{ padding: '2.5rem', minHeight: '100vh', background: '#000' }}>
+      {/* Header */}
+      <div style={{ marginBottom: '2.5rem' }}>
+        <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.4)', letterSpacing: '0.2em', marginBottom: 6 }}>
+          CONFIGURATION
+        </div>
+        <h1 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1.1rem', color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>
+          Settings
+        </h1>
+      </div>
 
-      <div className="max-w-lg space-y-6">
-        {/* Geelark */}
-        <div className="glass-card rounded-xl p-6">
-          <h2 className="mb-1 font-mono text-sm font-bold text-white">Geelark Integration</h2>
-          <p className="mb-5 text-xs text-[rgba(224,224,224,0.5)]">
+      <div style={{ maxWidth: 560, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        {/* Geelark integration */}
+        <div style={{
+          borderRadius: 14, padding: '1.75rem',
+          border: '1px solid rgba(0,229,200,0.1)',
+          background: 'rgba(0,229,200,0.02)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+            <div style={{
+              width: 30, height: 30, borderRadius: 8,
+              border: '1px solid rgba(0,229,200,0.25)',
+              background: 'rgba(0,229,200,0.05)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <Key size={13} style={{ color: '#00e5c8' }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 12, fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, color: '#fff', letterSpacing: '0.04em' }}>
+                Geelark Integration
+              </div>
+            </div>
+          </div>
+          <div style={{ fontSize: 12, fontFamily: 'Inter, sans-serif', color: 'rgba(224,224,224,0.45)', marginBottom: '1.25rem', lineHeight: 1.6 }}>
             Your Geelark API key is used to provision and manage cloud phones for account creation.
             You can also provide it per-job when creating a new job.
-          </p>
+          </div>
 
           {error && (
-            <div className="mb-4 rounded border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.06)] px-4 py-3 font-mono text-xs text-red-400">
+            <div style={{
+              marginBottom: '1rem', padding: '10px 14px',
+              border: '1px solid rgba(239,68,68,0.3)',
+              background: 'rgba(239,68,68,0.06)',
+              borderRadius: 8,
+              fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: '#ef4444',
+            }}>
               {error}
             </div>
           )}
 
           {saved && (
-            <div className="mb-4 flex items-center gap-2 rounded border border-[rgba(0,229,200,0.3)] bg-[rgba(0,229,200,0.06)] px-4 py-3 font-mono text-xs text-[#00e5c8]">
-              <CheckCircle2 size={14} />
-              Settings saved
+            <div style={{
+              marginBottom: '1rem', padding: '10px 14px',
+              border: '1px solid rgba(0,229,200,0.3)',
+              background: 'rgba(0,229,200,0.06)',
+              borderRadius: 8,
+              fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: '#00e5c8',
+              display: 'flex', alignItems: 'center', gap: 8,
+            }}>
+              <CheckCircle2 size={13} />
+              Settings saved successfully
             </div>
           )}
 
-          <form onSubmit={handleSave} className="space-y-4">
+          <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div>
-              <label className="mb-1.5 block font-mono text-xs tracking-widest text-[rgba(0,229,200,0.5)] uppercase">
-                Geelark API Key
+              <label style={{
+                display: 'block', marginBottom: 8,
+                fontSize: 9, fontFamily: '"JetBrains Mono", monospace',
+                color: 'rgba(0,229,200,0.5)', letterSpacing: '0.18em', textTransform: 'uppercase',
+              }}>
+                API Key
               </label>
               <input
                 type="text"
@@ -69,20 +112,54 @@ export default function SettingsPage() {
                 className="matrix-input"
               />
             </div>
-            <button type="submit" disabled={loading} className="btn-matrix-solid rounded px-6 py-2.5 text-sm">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-matrix-solid"
+              style={{ borderRadius: 8, padding: '11px 24px', fontSize: 11, letterSpacing: '0.1em', alignSelf: 'flex-start' }}
+            >
               {loading ? 'Saving…' : 'Save Settings'}
             </button>
           </form>
         </div>
 
-        {/* Contact */}
-        <div className="glass-card rounded-xl p-6">
-          <h2 className="mb-1 font-mono text-sm font-bold text-white">Support & Payments</h2>
-          <p className="text-xs text-[rgba(224,224,224,0.5)]">
+        {/* Support */}
+        <div style={{
+          borderRadius: 14, padding: '1.75rem',
+          border: '1px solid rgba(255,255,255,0.05)',
+          background: '#000',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+            <div style={{
+              width: 30, height: 30, borderRadius: 8,
+              border: '1px solid rgba(0,212,255,0.2)',
+              background: 'rgba(0,212,255,0.04)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <MessageCircle size={13} style={{ color: '#00d4ff' }} />
+            </div>
+            <div style={{ fontSize: 12, fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, color: '#fff', letterSpacing: '0.04em' }}>
+              Support &amp; Payments
+            </div>
+          </div>
+          <div style={{ fontSize: 13, fontFamily: 'Inter, sans-serif', color: 'rgba(224,224,224,0.5)', lineHeight: 1.6 }}>
             For credits, billing questions, or support — contact{' '}
-            <span className="text-[#00e5c8]">@aidetectionkiller</span> on Telegram.
-            Payments are processed via crypto.
-          </p>
+            <span style={{ color: '#00e5c8', fontWeight: 600 }}>@aidetectionkiller</span>
+            {' '}on Telegram. Payments are processed via crypto.
+          </div>
+        </div>
+
+        {/* System info */}
+        <div style={{
+          borderRadius: 14, padding: '1.5rem 1.75rem',
+          border: '1px solid rgba(255,255,255,0.04)',
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'center', gap: 10,
+        }}>
+          <Zap size={12} style={{ color: 'rgba(0,229,200,0.3)', flexShrink: 0 }} />
+          <span style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(224,224,224,0.2)', letterSpacing: '0.05em' }}>
+            VA NIGHTMARE AUTOMATION · v1.0 · All systems operational
+          </span>
         </div>
       </div>
     </div>

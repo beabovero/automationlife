@@ -35,38 +35,44 @@ function AccountRow({ account }: { account: Account }) {
     <>
       <tr
         onClick={toggle}
-        className="cursor-pointer border-b border-[rgba(0,229,200,0.06)] transition-colors hover:bg-[rgba(0,229,200,0.02)]"
+        style={{ borderBottom: '1px solid rgba(0,229,200,0.04)', cursor: 'pointer' }}
       >
-        <td className="px-4 py-3 font-mono text-xs text-[rgba(224,224,224,0.6)]">{account.id.slice(0, 8)}…</td>
-        <td className="px-4 py-3"><StatusBadge status={account.status} /></td>
-        <td className="px-4 py-3 font-mono text-xs text-[rgba(224,224,224,0.4)]">
+        <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.5)' }}>{account.id.slice(0, 8)}…</td>
+        <td style={{ padding: '12px 16px' }}><StatusBadge status={account.status} /></td>
+        <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.4)' }}>
           S{account.stage_reached ?? 0} · {account.current_checkpoint ?? '—'}
         </td>
-        <td className="px-4 py-3 font-mono text-xs text-[rgba(224,224,224,0.4)]">{account.retry_count}</td>
-        <td className="px-4 py-3 font-mono text-xs text-[#00e5c8]">{account.credits_charged}</td>
-        <td className="px-4 py-3 font-mono text-xs text-[rgba(0,212,255,0.7)]">
+        <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.4)' }}>{account.retry_count}</td>
+        <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: '#00e5c8' }}>{account.credits_charged}</td>
+        <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(0,212,255,0.6)' }}>
           {expanded ? '▼' : '▶'}
         </td>
       </tr>
       {expanded && (
-        <tr className="border-b border-[rgba(0,229,200,0.06)] bg-[rgba(0,0,0,0.3)]">
-          <td colSpan={6} className="px-6 py-4">
+        <tr style={{ borderBottom: '1px solid rgba(0,229,200,0.04)', background: 'rgba(0,0,0,0.4)' }}>
+          <td colSpan={6} style={{ padding: '16px 20px' }}>
             {account.error_message && (
-              <div className="mb-3 rounded border border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.04)] px-3 py-2 font-mono text-xs text-red-400">
+              <div style={{
+                marginBottom: 12, padding: '10px 14px',
+                border: '1px solid rgba(239,68,68,0.2)',
+                background: 'rgba(239,68,68,0.04)',
+                borderRadius: 6,
+                fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: '#ef4444',
+              }}>
                 {account.error_message}
               </div>
             )}
             {events.length === 0 ? (
-              <div className="font-mono text-xs text-[rgba(224,224,224,0.3)]">No events yet</div>
+              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.25)' }}>No events yet</div>
             ) : (
-              <div className="space-y-1 max-h-48 overflow-y-auto">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 200, overflowY: 'auto' }}>
                 {events.map(ev => (
-                  <div key={ev.id} className="flex items-start gap-3 font-mono text-xs">
-                    <span className="text-[rgba(0,229,200,0.3)] shrink-0">
+                  <div key={ev.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, fontFamily: '"JetBrains Mono", monospace', fontSize: 11 }}>
+                    <span style={{ color: 'rgba(0,229,200,0.3)', flexShrink: 0 }}>
                       {new Date(ev.created_at).toLocaleTimeString()}
                     </span>
-                    <span className="text-[rgba(0,212,255,0.6)] shrink-0">S{ev.stage}·{ev.checkpoint}</span>
-                    <span className="text-[rgba(224,224,224,0.6)]">{ev.message}</span>
+                    <span style={{ color: 'rgba(0,212,255,0.6)', flexShrink: 0 }}>S{ev.stage}·{ev.checkpoint}</span>
+                    <span style={{ color: 'rgba(224,224,224,0.6)' }}>{ev.message}</span>
                   </div>
                 ))}
               </div>
@@ -98,7 +104,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   useEffect(() => {
     load()
 
-    // Realtime subscription
     const channel = supabase
       .channel(`job-${id}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs', filter: `id=eq.${id}` },
@@ -112,86 +117,146 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center p-8">
-        <RefreshCw size={20} className="animate-spin text-[#00e5c8]" />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#000' }}>
+        <RefreshCw size={20} style={{ color: '#00e5c8', animation: 'spin 1s linear infinite' }} />
       </div>
     )
   }
 
   if (!job) {
-    return <div className="p-8 font-mono text-sm text-red-400">Job not found</div>
+    return (
+      <div style={{ padding: '2.5rem', background: '#000', fontFamily: '"JetBrains Mono", monospace', fontSize: 12, color: '#ef4444' }}>
+        Job not found
+      </div>
+    )
   }
 
   const pct = job.total_accounts ? (job.completed_accounts / job.total_accounts) * 100 : 0
 
+  const statCards = [
+    { label: 'Total',     value: job.total_accounts,    color: '#e0e0e0',  accent: 'rgba(224,224,224,0.2)' },
+    { label: 'Completed', value: job.completed_accounts, color: '#00e5c8',  accent: '#00e5c8' },
+    { label: 'Failed',    value: job.failed_accounts,    color: '#ef4444',  accent: '#ef4444' },
+    { label: 'Credits',   value: job.credits_charged,    color: '#00e5c8',  accent: '#00b8d9' },
+  ]
+
   return (
-    <div className="p-8">
-      <div className="mb-6 flex items-center gap-4">
-        <Link href="/jobs" className="text-[rgba(0,212,255,0.6)] hover:text-[#00d4ff] transition-colors">
-          <ArrowLeft size={18} />
+    <div style={{ padding: '2.5rem', minHeight: '100vh', background: '#000' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: '2.5rem' }}>
+        <Link
+          href="/jobs"
+          style={{
+            width: 36, height: 36, borderRadius: 8,
+            border: '1px solid rgba(0,229,200,0.15)',
+            background: 'rgba(0,229,200,0.03)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'rgba(0,229,200,0.6)', textDecoration: 'none', flexShrink: 0,
+          }}
+        >
+          <ArrowLeft size={15} />
         </Link>
-        <div>
-          <h1 className="font-mono text-xl font-bold text-white">Job {job.id.slice(0, 8)}…</h1>
-          <p className="font-mono text-xs text-[rgba(0,229,200,0.4)]">
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.4)', letterSpacing: '0.2em', marginBottom: 4 }}>
+            JOB DETAIL
+          </div>
+          <h1 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1.1rem', color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>
+            Job {job.id.slice(0, 8)}…
+          </h1>
+          <div style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(224,224,224,0.25)', marginTop: 4 }}>
             Created {new Date(job.created_at).toLocaleString()}
-          </p>
+          </div>
         </div>
-        <div className="ml-auto">
-          <StatusBadge status={job.status} />
-        </div>
+        <StatusBadge status={job.status} />
       </div>
 
       {/* Stats */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-4">
-        {[
-          ['Total',     job.total_accounts,     '#e0e0e0'],
-          ['Completed', job.completed_accounts,  '#00e5c8'],
-          ['Failed',    job.failed_accounts,     '#ef4444'],
-          ['Credits',   job.credits_charged,     '#00e5c8'],
-        ].map(([label, val, color]) => (
-          <div key={label as string} className="glass-card rounded-xl p-4">
-            <div className="font-mono text-2xl font-black" style={{ color: color as string }}>{val}</div>
-            <div className="font-mono text-[10px] tracking-widest text-[rgba(224,224,224,0.4)] uppercase">{label}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+        {statCards.map(s => (
+          <div key={s.label} style={{
+            borderRadius: 14, padding: '1.5rem',
+            border: '1px solid rgba(255,255,255,0.05)',
+            background: '#000', position: 'relative', overflow: 'hidden',
+          }}>
+            <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(224,224,224,0.3)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+              {s.label}
+            </div>
+            <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '2.5rem', letterSpacing: '-0.04em', lineHeight: 1, color: s.color }}>
+              {s.value}
+            </div>
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, background: s.accent, opacity: 0.4 }} />
           </div>
         ))}
       </div>
 
       {/* Progress bar */}
-      <div className="mb-8">
-        <div className="mb-2 flex justify-between font-mono text-xs text-[rgba(0,229,200,0.5)]">
-          <span>Progress</span>
-          <span>{pct.toFixed(0)}%</span>
+      <div style={{ marginBottom: '2rem', borderRadius: 14, padding: '1.25rem 1.5rem', border: '1px solid rgba(0,229,200,0.08)', background: 'rgba(0,229,200,0.02)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+          <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'rgba(0,229,200,0.5)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+            Overall Progress
+          </span>
+          <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 12, fontWeight: 700, color: '#00e5c8' }}>
+            {pct.toFixed(0)}%
+          </span>
         </div>
-        <div className="h-2 rounded-full bg-[rgba(0,229,200,0.1)]">
-          <div
-            className="h-full rounded-full bg-[#00e5c8] transition-all duration-500"
-            style={{ width: `${pct}%` }}
-          />
+        <div style={{ height: 6, borderRadius: 999, background: 'rgba(0,229,200,0.08)', overflow: 'hidden' }}>
+          <div style={{
+            width: `${pct}%`, height: '100%',
+            background: 'linear-gradient(90deg, #00b8d9, #00e5c8)',
+            borderRadius: 999,
+            transition: 'width 0.5s ease',
+          }} />
+        </div>
+        <div style={{ marginTop: 8, fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'rgba(224,224,224,0.25)' }}>
+          {job.completed_accounts} of {job.total_accounts} accounts completed
         </div>
       </div>
 
       {/* Error */}
       {job.error_message && (
-        <div className="mb-6 rounded border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.06)] px-4 py-3 font-mono text-xs text-red-400">
+        <div style={{
+          marginBottom: '1.5rem', padding: '12px 16px',
+          border: '1px solid rgba(239,68,68,0.3)',
+          background: 'rgba(239,68,68,0.06)',
+          borderRadius: 10,
+          fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: '#ef4444',
+        }}>
           {job.error_message}
         </div>
       )}
 
       {/* Accounts table */}
-      <h2 className="mb-4 font-mono text-xs font-bold tracking-widest text-[rgba(0,229,200,0.6)] uppercase">
+      <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.4)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '1rem' }}>
         Accounts ({accounts.length})
-      </h2>
+      </div>
+
       {accounts.length === 0 ? (
-        <div className="glass-card rounded-xl p-8 text-center font-mono text-xs text-[rgba(224,224,224,0.3)]">
+        <div style={{
+          padding: '4rem', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14,
+          textAlign: 'center', fontFamily: '"JetBrains Mono", monospace', fontSize: 12, color: 'rgba(224,224,224,0.25)',
+        }}>
           {job.status === 'queued' ? 'Waiting for worker to pick up job…' : 'No accounts yet'}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-[rgba(0,229,200,0.1)]">
-          <table className="w-full">
+        <div style={{ border: '1px solid rgba(0,229,200,0.08)', borderRadius: 14, overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr className="border-b border-[rgba(0,229,200,0.1)] bg-[rgba(0,229,200,0.03)]">
+              <tr style={{ background: 'rgba(0,229,200,0.03)' }}>
                 {['Account', 'Status', 'Stage', 'Retries', 'Credits', ''].map(h => (
-                  <th key={h} className="px-4 py-3 text-left font-mono text-[10px] tracking-widest text-[rgba(0,229,200,0.5)] uppercase">
+                  <th
+                    key={h}
+                    style={{
+                      padding: '12px 16px',
+                      textAlign: 'left',
+                      fontFamily: '"JetBrains Mono", monospace',
+                      fontSize: 9,
+                      color: 'rgba(0,229,200,0.4)',
+                      letterSpacing: '0.15em',
+                      textTransform: 'uppercase',
+                      fontWeight: 600,
+                      borderBottom: '1px solid rgba(0,229,200,0.06)',
+                    }}
+                  >
                     {h}
                   </th>
                 ))}
