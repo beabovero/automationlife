@@ -176,7 +176,7 @@ export default async function CreditsPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ background: 'rgba(0,229,200,0.03)' }}>
-                  {['Date', 'Type', 'Amount', 'Balance After', 'Description'].map(h => (
+                  {['Date', 'Type', 'Amount', 'Description'].map(h => (
                     <th
                       key={h}
                       style={{
@@ -209,9 +209,6 @@ export default async function CreditsPage() {
                       <span style={{ color: tx.amount > 0 ? '#00e5c8' : '#ef4444' }}>
                         {tx.amount > 0 ? '+' : ''}{tx.amount}
                       </span>
-                    </td>
-                    <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: '#fff' }}>
-                      {tx.balance_after}
                     </td>
                     <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.45)' }}>
                       {tx.description ?? '—'}
