@@ -5,15 +5,15 @@ import Link from 'next/link'
 import type { Job, Account, AccountStatusEvent } from '@/lib/types'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 
-// Real 7-stage names from _dashboard_workflow.json
+// Generic phase labels shown to users — no internal process details
 const STAGE_LABELS: Record<number, string> = {
-  1: 'BOOT',
-  2: 'LAUNCH',
-  3: 'LAUNCH',
-  4: 'OTP',
-  5: 'AI PERMS',
-  6: 'PROFILE',
-  7: 'FINISH',
+  1: 'SETUP',
+  2: 'INSTALL',
+  3: 'VERIFY',
+  4: 'PERMS',
+  5: 'PROFILE',
+  6: 'CONFIG',
+  7: 'ACTIVE',
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -51,9 +51,10 @@ function AccountRow({ account }: { account: Account }) {
         <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.5)' }}>{account.id.slice(0, 8)}…</td>
         <td style={{ padding: '12px 16px' }}><StatusBadge status={account.status} /></td>
         <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.4)' }}>
-          <span style={{ color: 'rgba(0,229,200,0.6)' }}>S{account.stage_reached ?? 0}</span>
-          {account.stage_reached ? <span style={{ color: 'rgba(0,229,200,0.3)', fontSize: 9 }}> {STAGE_LABELS[account.stage_reached] ?? ''}</span> : null}
-          <span style={{ color: 'rgba(224,224,224,0.3)', marginLeft: 4 }}>· {account.current_checkpoint ?? '—'}</span>
+          {account.stage_reached
+            ? <span style={{ color: '#00e5c8' }}>Phase {account.stage_reached} · <span style={{ color: 'rgba(0,229,200,0.5)', fontSize: 9 }}>{STAGE_LABELS[account.stage_reached] ?? '—'}</span></span>
+            : <span style={{ color: 'rgba(224,224,224,0.2)' }}>—</span>
+          }
         </td>
         <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.4)' }}>{account.retry_count}</td>
         <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: '#00e5c8' }}>{account.credits_charged}</td>
@@ -84,10 +85,11 @@ function AccountRow({ account }: { account: Account }) {
                     <span style={{ color: 'rgba(0,229,200,0.3)', flexShrink: 0 }}>
                       {new Date(ev.created_at).toLocaleTimeString()}
                     </span>
-                    <span style={{ color: 'rgba(0,212,255,0.6)', flexShrink: 0 }}>
-                      S{ev.stage}{ev.stage && STAGE_LABELS[ev.stage] ? <span style={{ color: 'rgba(0,212,255,0.35)', fontSize: 9 }}> {STAGE_LABELS[ev.stage]}</span> : null}
-                      {ev.checkpoint ? `·${ev.checkpoint}` : ''}
-                    </span>
+                    {ev.stage && (
+                      <span style={{ color: 'rgba(0,212,255,0.55)', flexShrink: 0, fontSize: 10 }}>
+                        P{ev.stage} · {STAGE_LABELS[ev.stage] ?? '—'}
+                      </span>
+                    )}
                     <span style={{ color: 'rgba(224,224,224,0.6)' }}>{ev.message}</span>
                   </div>
                 ))}

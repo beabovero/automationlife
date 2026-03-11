@@ -69,15 +69,15 @@ function StatusBadge({ status }: { status: Job['status'] }) {
   return <span className={`badge badge-${status}`}>{status}</span>
 }
 
-// Real 7-stage pipeline matching _dashboard_workflow.json
+// Generic 7-phase names shown to users — no internal details
 const STAGE_NAMES = [
-  { short: 'BOOT',    label: 'Cloud Phone Boot' },
-  { short: 'LAUNCH',  label: 'App Launch' },
-  { short: 'OTP',     label: 'SMS Verify' },
-  { short: 'AI PERMS',label: 'Permission AI' },
-  { short: 'PROFILE', label: 'Profile Build' },
-  { short: 'PREFS',   label: 'Preferences' },
-  { short: 'LIVE',    label: 'Confirmed Live' },
+  { short: 'SETUP',   label: 'Phone Setup' },
+  { short: 'INSTALL', label: 'App Installation' },
+  { short: 'VERIFY',  label: 'Verification' },
+  { short: 'PERMS',   label: 'Permissions' },
+  { short: 'PROFILE', label: 'Profile Creation' },
+  { short: 'CONFIG',  label: 'Configuration' },
+  { short: 'ACTIVE',  label: 'Account Active' },
 ]
 
 function StagePipeline({ currentStage }: { currentStage: number }) {
@@ -648,7 +648,7 @@ export default function DashboardClient({
                     </span>
                     {ev.stage && (
                       <span style={{ color: 'rgba(168,85,247,0.6)', flexShrink: 0, fontSize: 9, marginTop: 1 }}>
-                        S{ev.stage}{ev.checkpoint ? `·${ev.checkpoint.slice(0, 8)}` : ''}
+                        {STAGE_NAMES[ev.stage - 1]?.short ?? `P${ev.stage}`}
                       </span>
                     )}
                     <span style={{ color, lineHeight: 1.4, wordBreak: 'break-word' }}>

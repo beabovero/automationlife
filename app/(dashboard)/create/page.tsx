@@ -6,94 +6,86 @@ import { createClient } from '@/lib/supabase/client'
 import SimulationPanel from '@/components/SimulationPanel'
 import {
   Upload, X, PlusCircle, Zap, Lock, AlertTriangle, Eye,
-  PhoneCall, Cpu, MessageSquare, ShieldCheck, User, Settings, CheckCircle2,
+  Globe, Server, CheckCircle2, Info,
 } from 'lucide-react'
 
 const MAX_PHOTOS = 6
 
-// ─── Real 7-stage pipeline from _dashboard_workflow.json ──────────────────────
-const AUTOMATION_STAGES = [
+// ─── Pipeline stages — generic, no internal details exposed ──────────────────
+const PIPELINE_STAGES = [
   {
     n: 1,
-    short: 'BOOT',
-    label: 'Cloud Phone Boot',
-    icon: <Cpu size={13} />,
-    color: '#00d4ff',
-    desc: 'Dedicated Geelark Android cloud phone provisioned — Bumble APK installed & ready',
-    detail: 'Stage 1 — classic mode · ~25s',
+    label: 'Phone Setup',
+    desc: 'A dedicated cloud phone is provisioned and configured with your proxy connection.',
   },
   {
     n: 2,
-    short: 'LAUNCH',
-    label: 'App Launch',
-    icon: <PhoneCall size={13} />,
-    color: '#00d4ff',
-    desc: 'Bumble opens on the cloud phone — initial loading screens cleared automatically',
-    detail: 'Stage 2–3 — classic mode · ~10s',
+    label: 'App Installation',
+    desc: 'The target application is installed and launched on the cloud phone.',
   },
   {
     n: 3,
-    short: 'OTP',
-    label: 'SMS Verification',
-    icon: <MessageSquare size={13} />,
-    color: '#00e5c8',
-    desc: 'German virtual number purchased via PVAPins · bumble10 product · number entered, OTP intercepted & auto-typed (180s window)',
-    detail: 'Stage 4 — classic mode · PVAPins · Germany',
+    label: 'Phone Verification',
+    desc: 'A virtual number is acquired for the selected country. The verification code is intercepted and submitted automatically.',
     highlight: true,
   },
   {
     n: 4,
-    short: 'AI PERMS',
-    label: 'AI Permission Handler',
-    icon: <ShieldCheck size={13} />,
-    color: '#a855f7',
-    desc: 'Claude Sonnet vision AI handles ALL system popups — location, notifications, privacy consent, passkey — in any order they appear',
-    detail: 'Stage 5 — AI vision loop · claude-sonnet-4',
-    highlight: true,
+    label: 'Automatic Setup',
+    desc: 'All permission dialogs and system screens are handled automatically without any manual intervention.',
   },
   {
     n: 5,
-    short: 'PROFILE',
-    label: 'Profile Build',
-    icon: <User size={13} />,
-    color: '#00e5c8',
-    desc: 'Your name & birthday entered · your photos uploaded one by one — indistinguishable from a real user signing up',
-    detail: 'Stage 6 (checkpoints 6.1–6.3) — classic',
+    label: 'Profile Creation',
+    desc: 'Your display name, birthday and photos are submitted — exactly like a real user signing up.',
   },
   {
     n: 6,
-    short: 'PREFS',
-    label: 'Preferences & Bio',
-    icon: <Settings size={13} />,
-    color: '#00e5c8',
-    desc: 'Gender, who-to-meet, height, interests, habits — set by automation · profile bio answer generated live by Claude Haiku AI',
-    detail: 'Stage 6 (checkpoints 6.4–6.12) — hybrid',
+    label: 'Profile Configuration',
+    desc: 'Interests, preferences and profile answers are configured automatically.',
   },
   {
     n: 7,
-    short: 'LIVE',
     label: 'Account Confirmed',
-    icon: <CheckCircle2 size={13} />,
-    color: '#00e5c8',
-    desc: '"It\'s cool to be kind" terms detected & accepted · tutorial completed · AI vision confirms account is LIVE — credit charged only here',
-    detail: 'Stage 7 — hybrid · charged on success only',
+    desc: 'Final verification confirms the account is active. Credit is charged only at this step.',
     highlight: true,
   },
 ]
 
-// ─── Label style helper ────────────────────────────────────────────────────────
+// ─── Countries — Thailand hardcoded for trial, others locked ─────────────────
+const COUNTRIES = [
+  { code: 'TH', flag: '🇹🇭', name: 'Thailand', available: true,  note: 'Available now' },
+  { code: 'US', flag: '🇺🇸', name: 'USA',       available: false, note: 'Coming soon' },
+  { code: 'DE', flag: '🇩🇪', name: 'Germany',   available: false, note: 'Coming soon' },
+  { code: 'GB', flag: '🇬🇧', name: 'UK',        available: false, note: 'Coming soon' },
+  { code: 'FR', flag: '🇫🇷', name: 'France',    available: false, note: 'Coming soon' },
+]
 
-function FieldLabel({ children }: { children: React.ReactNode }) {
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function FieldLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
   return (
-    <div style={{
-      marginBottom: 7, fontSize: 9,
-      fontFamily: '"JetBrains Mono", monospace',
-      color: 'rgba(0,229,200,0.45)',
-      letterSpacing: '0.16em', textTransform: 'uppercase',
-    }}>
-      {children}
+    <div style={{ marginBottom: 7, display: 'flex', alignItems: 'center', gap: 6 }}>
+      <span style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.45)', letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+        {children}
+      </span>
+      {hint && (
+        <span style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(224,224,224,0.2)' }}>
+          — {hint}
+        </span>
+      )}
     </div>
   )
+}
+
+function parseProxies(raw: string): string[] {
+  return raw.split('\n').map(l => l.trim()).filter(l => l.length > 0)
+}
+
+function validateProxy(line: string): boolean {
+  // host:port:user:pass  OR  host:port
+  const parts = line.split(':')
+  return parts.length >= 2 && parts[0].length > 0 && !isNaN(parseInt(parts[1]))
 }
 
 // ─── Main page ────────────────────────────────────────────────────────────────
@@ -107,6 +99,8 @@ export default function CreateJobPage() {
     desired_name: '',
     birthday: '',
     gender: 'female' as 'male' | 'female',
+    country: 'TH',
+    proxies_raw: '',
   })
   const [photos, setPhotos] = useState<File[]>([])
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([])
@@ -144,8 +138,17 @@ export default function CreateJobPage() {
     setError('')
     if ((credits ?? 0) === 0) { setError('No credits available. Top up to launch jobs.'); return }
     if (photos.length === 0) { setError('Upload at least one profile photo'); return }
-    if (!form.desired_name.trim()) { setError('Profile display name is required'); return }
+    if (!form.desired_name.trim()) { setError('Display name is required'); return }
     if (!form.birthday) { setError('Birthday is required'); return }
+
+    const proxies = parseProxies(form.proxies_raw)
+    if (proxies.length === 0) { setError('At least one proxy is required'); return }
+    const invalidProxy = proxies.find(p => !validateProxy(p))
+    if (invalidProxy) { setError(`Invalid proxy format: "${invalidProxy}" — expected host:port:user:pass`); return }
+    if (proxies.length < form.accounts_count) {
+      setError(`You need at least ${form.accounts_count} proxy line${form.accounts_count > 1 ? 's' : ''} (one per account). You provided ${proxies.length}.`)
+      return
+    }
 
     setLoading(true)
     try {
@@ -172,9 +175,9 @@ export default function CreateJobPage() {
           desired_name: form.desired_name,
           birthday: form.birthday,
           gender: form.gender,
+          country: form.country,
+          proxies,
           photos: [],
-          // SMS handled by operator: Germany / PVAPins / bumble10
-          // Bio auto-generated by Claude Haiku at checkpoint 6.10
         },
         started_at: null, completed_at: null, worker_id: null, error_message: null,
       }).select().single()
@@ -199,6 +202,8 @@ export default function CreateJobPage() {
           desired_name: form.desired_name,
           birthday: form.birthday,
           gender: form.gender,
+          country: form.country,
+          proxies,
           photos: storagePaths,
         },
       }).eq('id', job.id)
@@ -210,6 +215,10 @@ export default function CreateJobPage() {
     }
   }
 
+  const proxies = parseProxies(form.proxies_raw)
+  const proxyCount = proxies.length
+  const proxyValid = proxies.every(validateProxy)
+  const proxyError = proxyCount > 0 && !proxyValid
   const noCredits = credits !== null && credits === 0
   const insufficientCredits = credits !== null && credits < form.accounts_count && credits > 0
   const canSubmit = !noCredits && !insufficientCredits && !loading
@@ -221,7 +230,7 @@ export default function CreateJobPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
         <div>
           <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.4)', letterSpacing: '0.2em', marginBottom: 6 }}>
-            NEW BUMBLE JOB
+            NEW JOB
           </div>
           <h1 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '1.1rem', color: '#fff', letterSpacing: '-0.02em', margin: 0 }}>
             Launch Automation Job
@@ -231,7 +240,7 @@ export default function CreateJobPage() {
               ? 'Loading…'
               : noCredits
                 ? <span style={{ color: 'rgba(251,191,36,0.6)' }}>0 credits — top up to launch</span>
-                : <span>Available: <span style={{ color: '#00e5c8', fontWeight: 700 }}>{credits}</span> credits · 1 credit = 1 Bumble account · charged on success only</span>
+                : <span>Available: <span style={{ color: '#00e5c8', fontWeight: 700 }}>{credits}</span> credits · 1 credit = 1 account · charged on success only</span>
             }
           </div>
         </div>
@@ -240,17 +249,14 @@ export default function CreateJobPage() {
           border: `1px solid ${noCredits ? 'rgba(251,191,36,0.2)' : 'rgba(0,229,200,0.15)'}`,
           background: noCredits ? 'rgba(251,191,36,0.04)' : 'rgba(0,229,200,0.04)',
         }}>
-          {noCredits
-            ? <Lock size={12} style={{ color: 'rgba(251,191,36,0.5)' }} />
-            : <Zap size={12} style={{ color: '#00e5c8' }} />
-          }
+          {noCredits ? <Lock size={12} style={{ color: 'rgba(251,191,36,0.5)' }} /> : <Zap size={12} style={{ color: '#00e5c8' }} />}
           <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: noCredits ? 'rgba(251,191,36,0.5)' : 'rgba(0,229,200,0.6)', letterSpacing: '0.06em' }}>
             {noCredits ? 'LOCKED — NO CREDITS' : `${form.accounts_count} credit${form.accounts_count !== 1 ? 's' : ''} reserved`}
           </span>
         </div>
       </div>
 
-      {/* ── No credits preview banner ── */}
+      {/* ── No credits banner ── */}
       {noCredits && (
         <div style={{
           borderRadius: 12, border: '1px solid rgba(251,191,36,0.25)',
@@ -262,16 +268,15 @@ export default function CreateJobPage() {
           </div>
           <div>
             <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, fontWeight: 700, color: '#fbbf24', letterSpacing: '0.08em', marginBottom: 4 }}>
-              NO CREDITS — PREVIEW MODE
+              PREVIEW MODE — NO CREDITS
             </div>
             <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: 'rgba(224,224,224,0.5)' }}>
-              Explore the full automation configuration below. To launch, contact{' '}
+              Explore the full configuration below. To launch accounts, contact{' '}
               <span style={{ color: '#fbbf24', fontWeight: 600 }}>@aidetectionkiller</span> on Telegram to top up via crypto.
             </div>
           </div>
           <div style={{ marginLeft: 'auto', padding: '3px 10px', borderRadius: 4, border: '1px solid rgba(251,191,36,0.3)', background: 'rgba(251,191,36,0.06)', fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: '#fbbf24', letterSpacing: '0.12em', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
-            <Eye size={9} />
-            PREVIEW MODE
+            <Eye size={9} /> PREVIEW
           </div>
         </div>
       )}
@@ -286,7 +291,7 @@ export default function CreateJobPage() {
       <form onSubmit={handleSubmit}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 380px', gap: '1.25rem' }}>
 
-          {/* ── Column 1: Job config + Profile ── */}
+          {/* ── Column 1: Config + Profile ── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
             {/* Job count */}
@@ -294,7 +299,7 @@ export default function CreateJobPage() {
               <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, color: 'rgba(0,229,200,0.5)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: '1.1rem' }}>
                 Job Configuration
               </div>
-              <FieldLabel>Number of Bumble Accounts</FieldLabel>
+              <FieldLabel>Number of Accounts</FieldLabel>
               <input
                 type="number" min={1} max={credits ?? 100}
                 value={form.accounts_count}
@@ -305,57 +310,98 @@ export default function CreateJobPage() {
               <div style={{ marginTop: 5, fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: insufficientCredits ? '#ef4444' : 'rgba(0,229,200,0.3)' }}>
                 {insufficientCredits
                   ? `⚠ Need ${form.accounts_count} credits, you have ${credits}`
-                  : `${form.accounts_count} credit${form.accounts_count !== 1 ? 's' : ''} · billed only on AI-confirmed live accounts`}
+                  : `${form.accounts_count} credit${form.accounts_count !== 1 ? 's' : ''} · charged on success only`}
               </div>
             </div>
 
-            {/* Profile fields */}
-            <div style={{ borderRadius: 14, padding: '1.6rem', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.35)', flex: 1 }}>
+            {/* Country */}
+            <div style={{ borderRadius: 14, padding: '1.6rem', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.35)' }}>
+              <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, color: 'rgba(0,229,200,0.5)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: '1.1rem' }}>
+                Target Country
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: '1rem' }}>
+                {COUNTRIES.map(c => (
+                  <button
+                    key={c.code}
+                    type="button"
+                    disabled={!c.available}
+                    onClick={() => c.available && setForm(f => ({ ...f, country: c.code }))}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '10px 14px', borderRadius: 8, cursor: c.available ? 'pointer' : 'not-allowed',
+                      border: form.country === c.code
+                        ? '1px solid rgba(0,229,200,0.5)'
+                        : c.available
+                          ? '1px solid rgba(255,255,255,0.08)'
+                          : '1px solid rgba(255,255,255,0.04)',
+                      background: form.country === c.code
+                        ? 'rgba(0,229,200,0.08)'
+                        : 'rgba(0,0,0,0.3)',
+                      opacity: c.available ? 1 : 0.45,
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 18, lineHeight: 1 }}>{c.flag}</span>
+                      <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: form.country === c.code ? '#00e5c8' : c.available ? 'rgba(224,224,224,0.7)' : 'rgba(224,224,224,0.3)', fontWeight: form.country === c.code ? 700 : 400 }}>
+                        {c.name}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      {form.country === c.code && <CheckCircle2 size={13} style={{ color: '#00e5c8' }} />}
+                      {!c.available && (
+                        <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 8, color: 'rgba(224,224,224,0.25)', letterSpacing: '0.08em' }}>
+                          SOON
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Thailand trial note */}
+              <div style={{ display: 'flex', gap: 8, padding: '8px 12px', borderRadius: 7, border: '1px solid rgba(251,191,36,0.15)', background: 'rgba(251,191,36,0.03)' }}>
+                <Info size={12} style={{ color: 'rgba(251,191,36,0.5)', flexShrink: 0, marginTop: 1 }} />
+                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(251,191,36,0.5)', lineHeight: 1.6 }}>
+                  Trial: Thailand only. After creation, manually change location to your desired country (e.g. USA) via app settings.
+                </div>
+              </div>
+            </div>
+
+            {/* Profile */}
+            <div style={{ borderRadius: 14, padding: '1.6rem', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.35)' }}>
               <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, color: 'rgba(0,229,200,0.5)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: '1.1rem' }}>
                 Profile Details
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
-                {/* Display name */}
                 <div>
                   <FieldLabel>Display Name</FieldLabel>
                   <input
-                    type="text"
-                    value={form.desired_name}
+                    type="text" value={form.desired_name}
                     onChange={e => setForm(f => ({ ...f, desired_name: e.target.value }))}
                     placeholder="Emma"
-                    className="matrix-input"
-                    required={!noCredits}
+                    className="matrix-input" required={!noCredits}
                   />
-                  <div style={{ marginTop: 4, fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.25)' }}>
-                    Entered at stage 6 · maps to <span style={{ color: 'rgba(0,229,200,0.5)' }}>{'{{profile.desiredName}}'}</span>
-                  </div>
                 </div>
 
-                {/* Birthday */}
                 <div>
                   <FieldLabel>Birthday</FieldLabel>
                   <input
-                    type="date"
-                    value={form.birthday}
+                    type="date" value={form.birthday}
                     onChange={e => setForm(f => ({ ...f, birthday: e.target.value }))}
-                    className="matrix-input"
-                    style={{ colorScheme: 'dark' }}
+                    className="matrix-input" style={{ colorScheme: 'dark' }}
                     required={!noCredits}
                   />
-                  <div style={{ marginTop: 4, fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.25)' }}>
-                    Day / month / year typed separately · maps to <span style={{ color: 'rgba(0,229,200,0.5)' }}>{'{{profile.birthday}}'}</span>
-                  </div>
                 </div>
 
-                {/* Gender toggle */}
                 <div>
                   <FieldLabel>Gender</FieldLabel>
                   <div style={{ display: 'flex', gap: 8 }}>
                     {(['female', 'male'] as const).map(g => (
                       <button
-                        key={g}
-                        type="button"
+                        key={g} type="button"
                         onClick={() => setForm(f => ({ ...f, gender: g }))}
                         style={{
                           flex: 1, padding: '10px 0', borderRadius: 8, cursor: 'pointer',
@@ -372,34 +418,53 @@ export default function CreateJobPage() {
                       </button>
                     ))}
                   </div>
-                  <div style={{ marginTop: 4, fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.25)' }}>
-                    Controls GenderTap + WhoToMeetTap steps at checkpoint 6.4–6.5
-                  </div>
                 </div>
 
               </div>
             </div>
-
-            {/* SMS auto-config badge */}
-            <div style={{ borderRadius: 10, padding: '0.9rem 1.2rem', border: '1px solid rgba(0,212,255,0.1)', background: 'rgba(0,212,255,0.03)', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-              <MessageSquare size={14} style={{ color: 'rgba(0,212,255,0.5)', flexShrink: 0, marginTop: 1 }} />
-              <div>
-                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,212,255,0.6)', letterSpacing: '0.12em', fontWeight: 700, marginBottom: 3 }}>
-                  SMS — AUTO-CONFIGURED BY OPERATOR
-                </div>
-                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'rgba(224,224,224,0.4)', lineHeight: 1.6 }}>
-                  🇩🇪 Germany · PVAPins · product: bumble10<br />
-                  OTP window: 180s · auto-fill on receive
-                </div>
-              </div>
-            </div>
-
           </div>
 
-          {/* ── Column 2: Photos + Submit ── */}
+          {/* ── Column 2: Proxies + Photos + Submit ── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
-            {/* Photos upload */}
+            {/* Proxies */}
+            <div style={{ borderRadius: 14, padding: '1.6rem', border: `1px solid ${proxyError ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.05)'}`, background: 'rgba(0,0,0,0.35)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.1rem' }}>
+                <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, color: 'rgba(0,229,200,0.5)', letterSpacing: '0.18em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Server size={12} style={{ color: 'rgba(0,229,200,0.4)' }} />
+                  Proxies
+                </div>
+                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: proxyError ? '#ef4444' : proxyCount > 0 ? '#00e5c8' : 'rgba(224,224,224,0.25)' }}>
+                  {proxyCount > 0 ? `${proxyCount} line${proxyCount > 1 ? 's' : ''}${proxyError ? ' · invalid format' : ' · valid'}` : 'none'}
+                </span>
+              </div>
+
+              <textarea
+                value={form.proxies_raw}
+                onChange={e => setForm(f => ({ ...f, proxies_raw: e.target.value }))}
+                placeholder={'host:port:user:pass\nhost:port:user:pass\n…'}
+                rows={6}
+                className="matrix-input"
+                style={{ resize: 'vertical', fontFamily: '"JetBrains Mono", monospace', fontSize: 10 }}
+                required={!noCredits}
+              />
+
+              <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.3)', letterSpacing: '0.04em' }}>
+                  Format: <span style={{ color: 'rgba(0,229,200,0.5)' }}>host:port:username:password</span> — one per line
+                </div>
+                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(224,224,224,0.2)' }}>
+                  One proxy per account · must match selected country (Thailand)
+                </div>
+                {proxyCount > 0 && form.accounts_count > proxyCount && (
+                  <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: '#ef4444' }}>
+                    ⚠ {form.accounts_count - proxyCount} more proxy line{form.accounts_count - proxyCount > 1 ? 's' : ''} needed
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Photos */}
             <div style={{ borderRadius: 14, padding: '1.6rem', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.35)', flex: 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.1rem' }}>
                 <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, color: 'rgba(0,229,200,0.5)', letterSpacing: '0.18em', textTransform: 'uppercase' }}>
@@ -417,13 +482,13 @@ export default function CreateJobPage() {
                     marginBottom: 14, cursor: 'pointer', borderRadius: 10,
                     border: `2px dashed ${isDragActive ? '#00e5c8' : 'rgba(0,229,200,0.2)'}`,
                     background: isDragActive ? 'rgba(0,229,200,0.06)' : 'transparent',
-                    padding: '1.75rem', textAlign: 'center', transition: 'all 0.15s',
+                    padding: '1.5rem', textAlign: 'center', transition: 'all 0.15s',
                   }}
                 >
                   <input {...getInputProps()} />
-                  <Upload size={20} style={{ color: 'rgba(0,229,200,0.35)', margin: '0 auto 8px', display: 'block' }} />
+                  <Upload size={18} style={{ color: 'rgba(0,229,200,0.35)', margin: '0 auto 8px', display: 'block' }} />
                   <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'rgba(0,229,200,0.45)' }}>
-                    {isDragActive ? 'Drop here' : 'Drag & drop or click to browse'}
+                    {isDragActive ? 'Drop here' : 'Drag & drop or click'}
                   </div>
                   <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.25)', marginTop: 4 }}>
                     JPG, PNG · up to {MAX_PHOTOS} photos
@@ -436,8 +501,7 @@ export default function CreateJobPage() {
                   <div key={i} style={{ position: 'relative', aspectRatio: '1', overflow: 'hidden', borderRadius: 8, border: '1px solid rgba(0,229,200,0.15)' }}>
                     <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     <button
-                      type="button"
-                      onClick={() => removePhoto(i)}
+                      type="button" onClick={() => removePhoto(i)}
                       style={{ position: 'absolute', top: 4, right: 4, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,0.85)', border: 'none', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >
                       <X size={10} />
@@ -450,12 +514,6 @@ export default function CreateJobPage() {
                   </div>
                 ))}
               </div>
-
-              {photos.length > 0 && (
-                <div style={{ marginTop: 10, fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.3)' }}>
-                  Photos uploaded to Geelark phone at checkpoint 6.3 + 6.11
-                </div>
-              )}
             </div>
 
             {/* Submit */}
@@ -491,9 +549,9 @@ export default function CreateJobPage() {
             {!noCredits && (
               <div style={{ borderRadius: 10, padding: '1rem 1.25rem', border: '1px solid rgba(0,229,200,0.07)', background: 'rgba(0,229,200,0.02)' }}>
                 {[
-                  { label: 'Accounts', value: `${form.accounts_count}x` },
+                  { label: 'Accounts', value: `${form.accounts_count}×` },
                   { label: 'Price per account', value: '1 credit' },
-                  { label: 'Reserved', value: `${form.accounts_count} credit${form.accounts_count !== 1 ? 's' : ''}` },
+                  { label: 'Proxies ready', value: proxyCount >= form.accounts_count ? `${proxyCount} ✓` : `${proxyCount}/${form.accounts_count}` },
                 ].map(row => (
                   <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                     <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(224,224,224,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{row.label}</span>
@@ -506,7 +564,7 @@ export default function CreateJobPage() {
                   <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: 18, color: '#00e5c8' }}>{form.accounts_count} cr</span>
                 </div>
                 <div style={{ marginTop: 6, fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.3)' }}>
-                  Charged ONLY at Stage 7 · AI confirms account is live
+                  Charged only when account is confirmed active
                 </div>
               </div>
             )}
@@ -520,8 +578,7 @@ export default function CreateJobPage() {
             <div style={{ display: 'flex', gap: 6, borderRadius: 8, border: '1px solid rgba(0,229,200,0.1)', padding: 4, background: 'rgba(0,0,0,0.4)' }}>
               {(['pipeline', 'simulation'] as const).map(tab => (
                 <button
-                  key={tab}
-                  type="button"
+                  key={tab} type="button"
                   onClick={() => setPreviewTab(tab)}
                   style={{
                     flex: 1, padding: '7px', borderRadius: 6, border: 'none',
@@ -533,57 +590,52 @@ export default function CreateJobPage() {
                     cursor: 'pointer', transition: 'all 0.15s',
                   }}
                 >
-                  {tab === 'pipeline' ? '7-Stage Pipeline' : 'Simulation'}
+                  {tab === 'pipeline' ? 'How It Works' : 'Preview'}
                 </button>
               ))}
             </div>
 
             {previewTab === 'pipeline' ? (
 
-              /* Automation pipeline */
               <div style={{ borderRadius: 14, border: '1px solid rgba(0,229,200,0.08)', overflow: 'hidden' }}>
                 <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(0,229,200,0.06)', background: 'rgba(0,229,200,0.025)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.5)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-                    Bumble Automation Pipeline
+                    Automation Process
                   </div>
-                  <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.3)' }}>7 stages</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <Globe size={10} style={{ color: 'rgba(0,229,200,0.3)' }} />
+                    <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.3)' }}>
+                      {COUNTRIES.find(c => c.code === form.country)?.flag} {COUNTRIES.find(c => c.code === form.country)?.name}
+                    </span>
+                  </div>
                 </div>
 
                 <div style={{ padding: '4px 0' }}>
-                  {AUTOMATION_STAGES.map((s, i) => (
+                  {PIPELINE_STAGES.map((s, i) => (
                     <div
                       key={s.n}
                       style={{
                         padding: '11px 16px',
-                        borderBottom: i < AUTOMATION_STAGES.length - 1 ? '1px solid rgba(0,229,200,0.04)' : 'none',
+                        borderBottom: i < PIPELINE_STAGES.length - 1 ? '1px solid rgba(0,229,200,0.04)' : 'none',
                         display: 'flex', gap: 12, alignItems: 'flex-start',
                         background: s.highlight ? 'rgba(0,229,200,0.015)' : 'transparent',
                       }}
                     >
-                      {/* Stage number circle */}
                       <div style={{
-                        width: 26, height: 26, borderRadius: 7, flexShrink: 0,
+                        width: 22, height: 22, borderRadius: 6, flexShrink: 0,
                         border: `1px solid ${s.highlight ? 'rgba(0,229,200,0.35)' : 'rgba(255,255,255,0.08)'}`,
-                        background: s.highlight ? 'rgba(0,229,200,0.08)' : 'rgba(0,0,0,0.4)',
+                        background: s.highlight ? 'rgba(0,229,200,0.07)' : 'rgba(0,0,0,0.4)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: s.color,
-                        boxShadow: s.highlight ? '0 0 10px rgba(0,229,200,0.15)' : 'none',
+                        boxShadow: s.highlight ? '0 0 8px rgba(0,229,200,0.12)' : 'none',
                       }}>
-                        <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, fontWeight: 700, color: s.color }}>{s.n}</span>
+                        <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, fontWeight: 700, color: s.highlight ? '#00e5c8' : 'rgba(224,224,224,0.3)' }}>{s.n}</span>
                       </div>
-
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                          <span style={{ color: s.color, flexShrink: 0 }}>{s.icon}</span>
-                          <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, fontWeight: 700, color: '#e0e0e0', letterSpacing: '0.04em' }}>
-                            {s.label}
-                          </span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, fontWeight: 700, color: s.highlight ? '#e0e0e0' : 'rgba(224,224,224,0.7)', marginBottom: 3 }}>
+                          {s.label}
                         </div>
                         <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgba(224,224,224,0.4)', lineHeight: 1.5 }}>
                           {s.desc}
-                        </div>
-                        <div style={{ marginTop: 3, fontFamily: '"JetBrains Mono", monospace', fontSize: 8, color: 'rgba(0,229,200,0.25)', letterSpacing: '0.06em' }}>
-                          {s.detail}
                         </div>
                       </div>
                     </div>
@@ -593,17 +645,16 @@ export default function CreateJobPage() {
                 <div style={{ padding: '10px 16px', background: 'rgba(0,229,200,0.025)', borderTop: '1px solid rgba(0,229,200,0.06)', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#00e5c8', boxShadow: '0 0 8px #00e5c8' }} />
                   <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.45)', letterSpacing: '0.08em' }}>
-                    Credit charged only at Stage 7 — AI confirms account LIVE
+                    Credit charged at step 7 only — account must be confirmed active
                   </span>
                 </div>
               </div>
 
             ) : (
 
-              /* Simulation */
               <div>
                 <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.4)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 10 }}>
-                  Live Automation Preview
+                  Live Preview
                 </div>
                 <SimulationPanel />
               </div>
