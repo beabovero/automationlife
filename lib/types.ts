@@ -227,7 +227,6 @@ export interface Database {
           description?: string | null
           job_id?: string | null
           account_id?: string | null
-          admin_user_id?: string | null
         }
         Update: Record<string, never>
         Relationships: []
