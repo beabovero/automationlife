@@ -29,7 +29,7 @@ export default async function AdminJobsPage({ searchParams }: Props) {
     counts.all = (counts.all ?? 0) + 1
   })
 
-  const totalRevenue = jobs?.reduce((s, j) => s + (j.credits_charged ?? 0), 0) ?? 0
+  const totalRevenue = jobs?.reduce((s, j) => s + (j.completed_count ?? 0), 0) ?? 0
 
   return (
     <div style={{ padding: '2.5rem', minHeight: '100vh', background: 'transparent' }}>
@@ -116,7 +116,7 @@ export default async function AdminJobsPage({ searchParams }: Props) {
             </thead>
             <tbody>
               {jobs.map(job => {
-                const pct = job.total_accounts ? (job.completed_accounts / job.total_accounts) * 100 : 0
+                const pct = job.total_accounts ? (job.completed_count / job.total_accounts) * 100 : 0
                 return (
                   <tr key={job.id} style={{ borderBottom: '1px solid rgba(0,229,200,0.04)' }}>
                     <td style={{ padding: '12px 16px' }}>
@@ -142,12 +142,12 @@ export default async function AdminJobsPage({ searchParams }: Props) {
                           <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #00b8d9, #00e5c8)', borderRadius: 999 }} />
                         </div>
                         <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'rgba(224,224,224,0.3)' }}>
-                          {job.completed_accounts}/{job.total_accounts}
+                          {job.completed_count}/{job.total_accounts}
                         </span>
                       </div>
                     </td>
                     <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: '#00e5c8' }}>
-                      {job.credits_charged}
+                      {job.completed_count}
                     </td>
                     <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.3)' }}>
                       {new Date(job.created_at).toLocaleDateString()}

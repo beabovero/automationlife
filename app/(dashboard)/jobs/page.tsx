@@ -118,7 +118,7 @@ export default async function JobsPage() {
             </thead>
             <tbody>
               {jobs.map((job) => {
-                const pct = job.total_accounts ? (job.completed_accounts / job.total_accounts) * 100 : 0
+                const pct = job.total_accounts ? (job.completed_count / job.total_accounts) * 100 : 0
                 return (
                   <tr key={job.id} style={{ borderBottom: '1px solid rgba(0,229,200,0.04)' }}>
                     <td style={{ padding: '13px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.5)' }}>
@@ -136,15 +136,15 @@ export default async function JobsPage() {
                           <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #00b8d9, #00e5c8)', borderRadius: 999 }} />
                         </div>
                         <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.35)' }}>
-                          {job.completed_accounts}/{job.total_accounts}
+                          {job.completed_count}/{job.total_accounts}
                         </span>
-                        {job.failed_accounts > 0 && (
-                          <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: '#ef4444' }}>({job.failed_accounts}✗)</span>
+                        {job.failed_count > 0 && (
+                          <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: '#ef4444' }}>({job.failed_count}✗)</span>
                         )}
                       </div>
                     </td>
                     <td style={{ padding: '13px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: '#00e5c8' }}>
-                      {job.credits_charged}
+                      {job.completed_count}
                     </td>
                     <td style={{ padding: '13px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.35)' }}>
                       {new Date(job.created_at).toLocaleDateString()}
