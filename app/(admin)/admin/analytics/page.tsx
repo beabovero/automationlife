@@ -6,16 +6,16 @@ export default async function AdminAnalyticsPage() {
 
   const [{ data: users }, { data: jobs }, { data: txs }] = await Promise.all([
     adminSupabase.from('user_settings').select('credits, total_accounts_created, created_at'),
-    adminSupabase.from('jobs').select('status, credits_charged, created_at, total_accounts'),
-    adminSupabase.from('credit_transactions').select('amount, type, created_at'),
+    adminSupabase.from('jobs').select('status, completed_count, created_at, total_accounts'),
+    adminSupabase.from('credit_transactions').select('amount, reason, created_at'),
   ])
 
-  const totalRevenue   = jobs?.reduce((s, j) => s + (j.credits_charged ?? 0), 0) ?? 0
+  const totalRevenue   = jobs?.reduce((s, j) => s + (j.completed_count ?? 0), 0) ?? 0
   const totalAccounts  = jobs?.reduce((s, j) => s + (j.total_accounts ?? 0), 0) ?? 0
   const completedJobs  = jobs?.filter(j => j.status === 'completed' || j.status === 'partial').length ?? 0
   const successRate    = jobs?.length ? ((completedJobs / jobs.length) * 100).toFixed(0) : '0'
   const avgJobSize     = jobs?.length ? (totalAccounts / jobs.length).toFixed(1) : '0'
-  const totalGranted   = txs?.filter(t => t.type === 'admin_grant').reduce((s, t) => s + Math.max(0, t.amount), 0) ?? 0
+  const totalGranted   = txs?.filter(t => t.reason === 'admin_grant').reduce((s, t) => s + Math.max(0, t.amount), 0) ?? 0
 
   return (
     <div style={{ padding: '2.5rem', minHeight: '100vh', background: 'transparent' }}>
