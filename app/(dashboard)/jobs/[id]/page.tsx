@@ -5,36 +5,82 @@ import Link from 'next/link'
 import type { Job, Account, AccountStatusEvent } from '@/lib/types'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 
-// Generic phase labels shown to users — no internal process details
-const STAGE_LABELS: Record<number, string> = {
-  1: 'SETUP',
-  2: 'INSTALL',
-  3: 'VERIFY',
-  4: 'PERMS',
-  5: 'PROFILE',
-  6: 'CONFIG',
-  7: 'ACTIVE',
+// Human-readable labels for each workflow stage (matches _dashboard_workflow.json)
+const STAGE_LABELS: Record<string, string> = {
+  '1':   'Install Bumble',
+  '2':   'Open Bumble',
+  '3':   'Create Account (OTP)',
+  '4':   'App Approvals',
+  '5':   'Profile Setup',
+  '6':   'Accept Terms',
+  'pipeline': 'Photo Pipeline',
+  'provision': 'Phone Provisioning',
+  'photos': 'Photo Upload',
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const cls = ['queued','processing','completed','failed','retrying','partial'].includes(status)
-    ? `badge badge-${status}`
-    : 'badge'
-  return <span className={cls}>{status}</span>
+  const map: Record<string, string> = {
+    queued:     'rgba(251,191,36,0.15)',
+    processing: 'rgba(0,212,255,0.15)',
+    completed:  'rgba(0,229,200,0.15)',
+    active:     'rgba(0,229,200,0.15)',
+    failed:     'rgba(239,68,68,0.15)',
+    partial:    'rgba(168,85,247,0.15)',
+    pending:    'rgba(224,224,224,0.08)',
+  }
+  const text: Record<string, string> = {
+    queued:     '#fbbf24',
+    processing: '#00d4ff',
+    completed:  '#00e5c8',
+    active:     '#00e5c8',
+    failed:     '#ef4444',
+    partial:    '#a855f7',
+    pending:    'rgba(224,224,224,0.4)',
+  }
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center',
+      padding: '2px 8px', borderRadius: 4,
+      fontFamily: '"JetBrains Mono", monospace',
+      fontSize: 9, fontWeight: 700, letterSpacing: '0.1em',
+      background: map[status] ?? 'rgba(255,255,255,0.06)',
+      color: text[status] ?? '#e0e0e0',
+      border: `1px solid ${(text[status] ?? '#e0e0e0')}33`,
+      textTransform: 'uppercase',
+    }}>
+      {status}
+    </span>
+  )
+}
+
+function EventDot({ status }: { status: string }) {
+  const color = status === 'completed' ? '#00e5c8'
+    : status === 'failed' ? '#ef4444'
+    : '#00d4ff'
+  return (
+    <span style={{
+      display: 'inline-block', width: 6, height: 6,
+      borderRadius: '50%', background: color,
+      flexShrink: 0, marginTop: 3,
+    }} />
+  )
 }
 
 function AccountRow({ account }: { account: Account }) {
   const [expanded, setExpanded] = useState(false)
   const [events, setEvents] = useState<AccountStatusEvent[]>([])
+  const [loadingEvents, setLoadingEvents] = useState(false)
   const supabase = createClient()
 
   const loadEvents = async () => {
+    setLoadingEvents(true)
     const { data } = await supabase
       .from('account_status_events')
       .select('*')
       .eq('account_id', account.id)
       .order('created_at', { ascending: true })
     setEvents(data ?? [])
+    setLoadingEvents(false)
   }
 
   const toggle = async () => {
@@ -42,57 +88,121 @@ function AccountRow({ account }: { account: Account }) {
     setExpanded(e => !e)
   }
 
+  // Subscribe to new events in real-time when expanded
+  useEffect(() => {
+    if (!expanded) return
+    const ch = supabase
+      .channel(`events-${account.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public',
+        table: 'account_status_events',
+        filter: `account_id=eq.${account.id}`,
+      }, payload => {
+        setEvents(prev => [...prev, payload.new as AccountStatusEvent])
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(ch) }
+  }, [expanded, account.id])
+
+  const lastEvent = events[events.length - 1]
+
   return (
     <>
-      <tr
-        onClick={toggle}
-        style={{ borderBottom: '1px solid rgba(0,229,200,0.04)', cursor: 'pointer' }}
-      >
-        <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.5)' }}>{account.id.slice(0, 8)}…</td>
-        <td style={{ padding: '12px 16px' }}><StatusBadge status={account.status} /></td>
+      <tr onClick={toggle} style={{ borderBottom: '1px solid rgba(0,229,200,0.04)', cursor: 'pointer' }}>
+        {/* Account ID */}
+        <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.5)' }}>
+          <div>{account.profile_name || account.id.slice(0, 8) + '…'}</div>
+          {account.geelark_env_id && (
+            <div style={{ fontSize: 9, color: 'rgba(0,212,255,0.4)', marginTop: 2 }}>
+              phone: {account.geelark_env_id}
+            </div>
+          )}
+        </td>
+
+        {/* Status */}
+        <td style={{ padding: '12px 16px' }}>
+          <StatusBadge status={account.status} />
+        </td>
+
+        {/* Last event / failure reason */}
+        <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 10, maxWidth: 260 }}>
+          {account.failure_reason ? (
+            <span style={{ color: '#ef4444' }}>{account.failure_reason}</span>
+          ) : lastEvent ? (
+            <span style={{ color: 'rgba(224,224,224,0.5)' }}>{lastEvent.label}</span>
+          ) : (
+            <span style={{ color: 'rgba(224,224,224,0.2)' }}>—</span>
+          )}
+        </td>
+
+        {/* Retries */}
         <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.4)' }}>
-          {account.stage_reached
-            ? <span style={{ color: '#00e5c8' }}>Phase {account.stage_reached} · <span style={{ color: 'rgba(0,229,200,0.5)', fontSize: 9 }}>{STAGE_LABELS[account.stage_reached] ?? '—'}</span></span>
-            : <span style={{ color: 'rgba(224,224,224,0.2)' }}>—</span>
+          {account.retry_attempt ?? 0}
+        </td>
+
+        {/* Credits */}
+        <td style={{ padding: '12px 16px' }}>
+          {account.credits_charged
+            ? <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: '#00e5c8', background: 'rgba(0,229,200,0.08)', padding: '2px 6px', borderRadius: 3 }}>CHARGED</span>
+            : <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(224,224,224,0.2)' }}>—</span>
           }
         </td>
-        <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.4)' }}>{account.retry_count}</td>
-        <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: '#00e5c8' }}>{account.credits_charged}</td>
-        <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(0,212,255,0.6)' }}>
+
+        {/* Expand */}
+        <td style={{ padding: '12px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'rgba(0,212,255,0.5)' }}>
           {expanded ? '▼' : '▶'}
         </td>
       </tr>
+
       {expanded && (
-        <tr style={{ borderBottom: '1px solid rgba(0,229,200,0.04)', background: 'rgba(0,0,0,0.4)' }}>
+        <tr style={{ borderBottom: '1px solid rgba(0,229,200,0.04)', background: 'rgba(0,0,0,0.5)' }}>
           <td colSpan={6} style={{ padding: '16px 20px' }}>
-            {account.error_message && (
+
+            {/* Failure reason banner */}
+            {account.failure_reason && (
               <div style={{
                 marginBottom: 12, padding: '10px 14px',
-                border: '1px solid rgba(239,68,68,0.2)',
-                background: 'rgba(239,68,68,0.04)',
-                borderRadius: 6,
-                fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: '#ef4444',
+                border: '1px solid rgba(239,68,68,0.25)',
+                background: 'rgba(239,68,68,0.06)',
+                borderRadius: 6, display: 'flex', gap: 10, alignItems: 'flex-start',
               }}>
-                {account.error_message}
+                <span style={{ color: '#ef4444', fontFamily: '"JetBrains Mono", monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', flexShrink: 0, paddingTop: 1 }}>
+                  FAILURE
+                </span>
+                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: '#ef4444' }}>
+                  {account.failure_reason}
+                </span>
               </div>
             )}
-            {events.length === 0 ? (
+
+            {/* Event timeline */}
+            {loadingEvents ? (
+              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.25)' }}>Loading events…</div>
+            ) : events.length === 0 ? (
               <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.25)' }}>No events yet</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 200, overflowY: 'auto' }}>
-                {events.map(ev => (
-                  <div key={ev.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, fontFamily: '"JetBrains Mono", monospace', fontSize: 11 }}>
-                    <span style={{ color: 'rgba(0,229,200,0.3)', flexShrink: 0 }}>
-                      {new Date(ev.created_at).toLocaleTimeString()}
-                    </span>
-                    {ev.stage && (
-                      <span style={{ color: 'rgba(0,212,255,0.55)', flexShrink: 0, fontSize: 10 }}>
-                        P{ev.stage} · {STAGE_LABELS[ev.stage] ?? '—'}
+              <div>
+                <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.4)', letterSpacing: '0.15em', marginBottom: 8 }}>
+                  EVENT LOG · {events.length} entries
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 260, overflowY: 'auto', paddingRight: 4 }}>
+                  {events.map(ev => (
+                    <div key={ev.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontFamily: '"JetBrains Mono", monospace', fontSize: 11 }}>
+                      <EventDot status={ev.status} />
+                      <span style={{ color: 'rgba(0,229,200,0.3)', flexShrink: 0, fontSize: 10, width: 72 }}>
+                        {new Date(ev.created_at).toLocaleTimeString()}
                       </span>
-                    )}
-                    <span style={{ color: 'rgba(224,224,224,0.6)' }}>{ev.message}</span>
-                  </div>
-                ))}
+                      <span style={{
+                        color: ev.status === 'failed' ? '#ef4444'
+                          : ev.status === 'completed' ? '#00e5c8'
+                          : 'rgba(224,224,224,0.6)',
+                        flex: 1,
+                      }}>
+                        {ev.label ?? '—'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </td>
@@ -112,7 +222,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const load = async () => {
     const [{ data: j }, { data: a }] = await Promise.all([
       supabase.from('jobs').select('*').eq('id', id).single(),
-      supabase.from('accounts').select('*').eq('job_id', id).order('created_at'),
+      supabase.from('accounts').select('*').eq('job_id', id).order('position'),
     ])
     setJob(j)
     setAccounts(a ?? [])
@@ -121,7 +231,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   useEffect(() => {
     load()
-
     const channel = supabase
       .channel(`job-${id}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs', filter: `id=eq.${id}` },
@@ -129,7 +238,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       .on('postgres_changes', { event: '*', schema: 'public', table: 'accounts', filter: `job_id=eq.${id}` },
         () => load())
       .subscribe()
-
     return () => { supabase.removeChannel(channel) }
   }, [id])
 
@@ -149,29 +257,28 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     )
   }
 
-  const pct = job.total_accounts ? (job.completed_accounts / job.total_accounts) * 100 : 0
+  const pending = job.total_accounts - job.completed_count - job.failed_count
+  const pct = job.total_accounts ? (job.completed_count / job.total_accounts) * 100 : 0
 
   const statCards = [
-    { label: 'Total',     value: job.total_accounts,    color: '#e0e0e0',  accent: 'rgba(224,224,224,0.2)' },
-    { label: 'Completed', value: job.completed_accounts, color: '#00e5c8',  accent: '#00e5c8' },
-    { label: 'Failed',    value: job.failed_accounts,    color: '#ef4444',  accent: '#ef4444' },
-    { label: 'Credits',   value: job.credits_charged,    color: '#00e5c8',  accent: '#00b8d9' },
+    { label: 'Total',     value: job.total_accounts,  color: '#e0e0e0', accent: 'rgba(224,224,224,0.2)' },
+    { label: 'Completed', value: job.completed_count, color: '#00e5c8', accent: '#00e5c8' },
+    { label: 'Failed',    value: job.failed_count,    color: '#ef4444', accent: '#ef4444' },
+    { label: 'Pending',   value: Math.max(0, pending), color: '#fbbf24', accent: '#fbbf24' },
   ]
 
   return (
     <div style={{ padding: '2.5rem', minHeight: '100vh', background: 'transparent' }}>
+
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: '2.5rem' }}>
-        <Link
-          href="/jobs"
-          style={{
-            width: 36, height: 36, borderRadius: 8,
-            border: '1px solid rgba(0,229,200,0.15)',
-            background: 'rgba(0,229,200,0.03)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'rgba(0,229,200,0.6)', textDecoration: 'none', flexShrink: 0,
-          }}
-        >
+        <Link href="/jobs" style={{
+          width: 36, height: 36, borderRadius: 8,
+          border: '1px solid rgba(0,229,200,0.15)',
+          background: 'rgba(0,229,200,0.03)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: 'rgba(0,229,200,0.6)', textDecoration: 'none', flexShrink: 0,
+        }}>
           <ArrowLeft size={15} />
         </Link>
         <div style={{ flex: 1 }}>
@@ -188,7 +295,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         <StatusBadge status={job.status} />
       </div>
 
-      {/* Stats */}
+      {/* Stat cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
         {statCards.map(s => (
           <div key={s.label} style={{
@@ -200,7 +307,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               {s.label}
             </div>
             <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 900, fontSize: '2.5rem', letterSpacing: '-0.04em', lineHeight: 1, color: s.color }}>
-              {s.value}
+              {s.value ?? 0}
             </div>
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, background: s.accent, opacity: 0.4 }} />
           </div>
@@ -221,27 +328,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           <div style={{
             width: `${pct}%`, height: '100%',
             background: 'linear-gradient(90deg, #00b8d9, #00e5c8)',
-            borderRadius: 999,
-            transition: 'width 0.5s ease',
+            borderRadius: 999, transition: 'width 0.5s ease',
           }} />
         </div>
         <div style={{ marginTop: 8, fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'rgba(224,224,224,0.25)' }}>
-          {job.completed_accounts} of {job.total_accounts} accounts completed
+          {job.completed_count} of {job.total_accounts} accounts completed
         </div>
       </div>
-
-      {/* Error */}
-      {job.error_message && (
-        <div style={{
-          marginBottom: '1.5rem', padding: '12px 16px',
-          border: '1px solid rgba(239,68,68,0.3)',
-          background: 'rgba(239,68,68,0.06)',
-          borderRadius: 10,
-          fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: '#ef4444',
-        }}>
-          {job.error_message}
-        </div>
-      )}
 
       {/* Accounts table */}
       <div style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,229,200,0.4)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '1rem' }}>
@@ -260,21 +353,14 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'rgba(0,229,200,0.03)' }}>
-                {['Account', 'Status', 'Stage', 'Retries', 'Credits', ''].map(h => (
-                  <th
-                    key={h}
-                    style={{
-                      padding: '12px 16px',
-                      textAlign: 'left',
-                      fontFamily: '"JetBrains Mono", monospace',
-                      fontSize: 9,
-                      color: 'rgba(0,229,200,0.4)',
-                      letterSpacing: '0.15em',
-                      textTransform: 'uppercase',
-                      fontWeight: 600,
-                      borderBottom: '1px solid rgba(0,229,200,0.06)',
-                    }}
-                  >
+                {['Profile', 'Status', 'Last Event / Failure', 'Retries', 'Credits', ''].map(h => (
+                  <th key={h} style={{
+                    padding: '12px 16px', textAlign: 'left',
+                    fontFamily: '"JetBrains Mono", monospace',
+                    fontSize: 9, color: 'rgba(0,229,200,0.4)',
+                    letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600,
+                    borderBottom: '1px solid rgba(0,229,200,0.06)',
+                  }}>
                     {h}
                   </th>
                 ))}

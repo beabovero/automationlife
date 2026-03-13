@@ -11,8 +11,7 @@ type ActiveAccount = {
   id: string
   job_id: string
   status: string
-  stage_reached: number | null
-  current_checkpoint: string | null
+  failure_reason: string | null
 }
 
 interface Props {
@@ -69,49 +68,6 @@ function StatusBadge({ status }: { status: Job['status'] }) {
   return <span className={`badge badge-${status}`}>{status}</span>
 }
 
-// Generic 7-phase names shown to users — no internal details
-const STAGE_NAMES = [
-  { short: 'SETUP',   label: 'Phone Setup' },
-  { short: 'INSTALL', label: 'App Installation' },
-  { short: 'VERIFY',  label: 'Verification' },
-  { short: 'PERMS',   label: 'Permissions' },
-  { short: 'PROFILE', label: 'Profile Creation' },
-  { short: 'CONFIG',  label: 'Configuration' },
-  { short: 'ACTIVE',  label: 'Account Active' },
-]
-
-function StagePipeline({ currentStage }: { currentStage: number }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'nowrap', overflow: 'hidden' }}>
-      {STAGE_NAMES.map((s, i) => {
-        const n = i + 1
-        const active = n === currentStage
-        const done = n < currentStage
-        return (
-          <div key={n} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-            <div style={{
-              padding: '3px 6px', borderRadius: 4, fontSize: 7.5,
-              fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.03em',
-              border: `1px solid ${active ? '#00e5c8' : done ? 'rgba(0,229,200,0.25)' : 'rgba(255,255,255,0.06)'}`,
-              background: active ? 'rgba(0,229,200,0.12)' : done ? 'rgba(0,229,200,0.04)' : 'transparent',
-              color: active ? '#00e5c8' : done ? 'rgba(0,229,200,0.45)' : 'rgba(224,224,224,0.18)',
-              boxShadow: active ? '0 0 10px rgba(0,229,200,0.35)' : 'none',
-              transition: 'all 0.3s',
-              whiteSpace: 'nowrap',
-            }}
-              title={s.label}
-            >
-              {n}·{s.short}
-            </div>
-            {i < 6 && (
-              <div style={{ width: 5, height: 1, background: done ? 'rgba(0,229,200,0.25)' : 'rgba(255,255,255,0.04)', flexShrink: 0 }} />
-            )}
-          </div>
-        )
-      })}
-    </div>
-  )
-}
 
 function SuccessRing({ rate, size = 64 }: { rate: number; size?: number }) {
   const r = size / 2 - 5
@@ -194,7 +150,7 @@ export default function DashboardClient({
   const refreshActiveAccounts = useCallback(async (currentJobs: Job[]) => {
     const ids = currentJobs.filter(j => j.status === 'processing' || j.status === 'queued').map(j => j.id)
     if (ids.length === 0) { setActiveAccounts([]); return }
-    const { data } = await supabase.from('accounts').select('id, job_id, status, stage_reached, current_checkpoint').in('job_id', ids)
+    const { data } = await supabase.from('accounts').select('id, job_id, status, failure_reason').in('job_id', ids)
     if (data) setActiveAccounts(data)
   }, [])
 
@@ -254,23 +210,16 @@ export default function DashboardClient({
   void tick
 
   const getRunningTime = (job: Job) => {
-    const start = job.started_at ? new Date(job.started_at).getTime() : new Date(job.created_at).getTime()
-    return formatDuration(now - start)
+    return formatDuration(now - new Date(job.created_at).getTime())
   }
 
   const getETA = (job: Job): string | null => {
-    if (!job.started_at || job.completed_accounts === 0) return null
-    const elapsed = now - new Date(job.started_at).getTime()
-    const rate = job.completed_accounts / elapsed
-    const remaining = job.total_accounts - job.completed_accounts
+    if (job.completed_count === 0) return null
+    const elapsed = now - new Date(job.created_at).getTime()
+    const rate = job.completed_count / elapsed
+    const remaining = job.total_accounts - job.completed_count
     if (remaining <= 0) return null
     return formatDuration(remaining / rate) + ' left'
-  }
-
-  const getJobStage = (jobId: string): number => {
-    const accs = activeAccounts.filter(a => a.job_id === jobId && a.stage_reached)
-    if (accs.length === 0) return 1
-    return Math.max(...accs.map(a => a.stage_reached ?? 1))
   }
 
   const dateLabel = new Date().toLocaleDateString('en-GB', {
@@ -426,8 +375,7 @@ export default function DashboardClient({
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
                 {activeJobs.map(job => {
-                  const pct = job.total_accounts ? Math.round((job.completed_accounts / job.total_accounts) * 100) : 0
-                  const stage = getJobStage(job.id)
+                  const pct = job.total_accounts ? Math.round((job.completed_count / job.total_accounts) * 100) : 0
                   const eta = getETA(job)
                   const running = getRunningTime(job)
                   return (
@@ -466,7 +414,7 @@ export default function DashboardClient({
                             {pct}%
                           </div>
                           <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.4)' }}>
-                            {job.completed_accounts}/{job.total_accounts} · {job.failed_accounts > 0 ? <span style={{ color: '#ef4444' }}>{job.failed_accounts} failed</span> : '0 failed'}
+                            {job.completed_count}/{job.total_accounts} · {job.failed_count > 0 ? <span style={{ color: '#ef4444' }}>{job.failed_count} failed</span> : '0 failed'}
                           </div>
                         </div>
                         <div style={{ height: 6, borderRadius: 999, background: 'rgba(0,212,255,0.08)', overflow: 'hidden' }}>
@@ -480,10 +428,7 @@ export default function DashboardClient({
                         </div>
                       </div>
 
-                      {/* Stage pipeline */}
-                      <div style={{ marginBottom: '0.9rem' }}>
-                        <StagePipeline currentStage={stage} />
-                      </div>
+
 
                       {/* Footer */}
                       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -538,7 +483,7 @@ export default function DashboardClient({
                   </thead>
                   <tbody>
                     {recentJobs.map(job => {
-                      const pct = job.total_accounts ? Math.round((job.completed_accounts / job.total_accounts) * 100) : 0
+                      const pct = job.total_accounts ? Math.round((job.completed_count / job.total_accounts) * 100) : 0
                       return (
                         <tr key={job.id} style={{ borderBottom: '1px solid rgba(0,229,200,0.035)' }}>
                           <td style={{ padding: '11px 14px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'rgba(224,224,224,0.5)' }}>
@@ -553,12 +498,12 @@ export default function DashboardClient({
                                 <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg,#00b8d9,#00e5c8)', borderRadius: 999 }} />
                               </div>
                               <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'rgba(224,224,224,0.3)' }}>
-                                {job.completed_accounts}/{job.total_accounts}
+                                {job.completed_count}/{job.total_accounts}
                               </span>
                             </div>
                           </td>
                           <td style={{ padding: '11px 14px', fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: '#00e5c8' }}>
-                            {job.credits_charged}
+                            {job.completed_count}
                           </td>
                           <td style={{ padding: '11px 14px', fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'rgba(224,224,224,0.28)' }}>
                             {new Date(job.created_at).toLocaleDateString()}
@@ -646,13 +591,8 @@ export default function DashboardClient({
                     <span style={{ color: 'rgba(0,229,200,0.3)', flexShrink: 0, fontSize: 9, marginTop: 1 }}>
                       {formatTime(ev.created_at)}
                     </span>
-                    {ev.stage && (
-                      <span style={{ color: 'rgba(168,85,247,0.6)', flexShrink: 0, fontSize: 9, marginTop: 1 }}>
-                        {STAGE_NAMES[ev.stage - 1]?.short ?? `P${ev.stage}`}
-                      </span>
-                    )}
                     <span style={{ color, lineHeight: 1.4, wordBreak: 'break-word' }}>
-                      {ev.message ?? ev.status}
+                      {ev.label}
                     </span>
                   </div>
                 )
@@ -701,7 +641,7 @@ export default function DashboardClient({
                 {[
                   { label: 'Jobs completed', value: jobs.filter(j => j.status === 'completed').length, color: '#00e5c8' },
                   { label: 'Jobs failed', value: jobs.filter(j => j.status === 'failed').length, color: '#ef4444' },
-                  { label: 'Credits spent', value: jobs.reduce((s, j) => s + (j.credits_charged ?? 0), 0), color: '#a855f7' },
+                  { label: 'Credits spent', value: jobs.reduce((s, j) => s + (j.completed_count ?? 0), 0), color: '#a855f7' },
                 ].map(r => (
                   <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'rgba(224,224,224,0.35)' }}>{r.label}</span>
