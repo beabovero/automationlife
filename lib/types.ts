@@ -155,6 +155,28 @@ export interface Database {
         }
         Relationships: []
       }
+      account_photos: {
+        Row: {
+          id: string
+          account_id: string
+          user_id: string
+          storage_path: string
+          processed_path: string | null
+          position: number
+          created_at: string
+        }
+        Insert: {
+          account_id: string
+          user_id: string
+          storage_path: string
+          processed_path?: string | null
+          position: number
+        }
+        Update: {
+          processed_path?: string | null
+        }
+        Relationships: []
+      }
       account_status_events: {
         Row: AccountStatusEventRow
         Insert: {
