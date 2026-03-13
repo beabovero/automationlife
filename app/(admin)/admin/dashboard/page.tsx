@@ -16,13 +16,13 @@ export default async function AdminDashboardPage() {
   ] = await Promise.all([
     adminSupabase.from('user_settings').select('*').order('created_at', { ascending: false }),
     adminSupabase.from('jobs').select('*').order('created_at', { ascending: false }),
-    adminSupabase.from('credit_transactions').select('amount, type').eq('type', 'admin_grant'),
+    adminSupabase.from('credit_transactions').select('amount, reason').eq('reason', 'admin_grant'),
   ])
 
   const totalUsers = users?.length ?? 0
   const totalCreditsInSystem = users?.reduce((s, u) => s + (u.credits ?? 0), 0) ?? 0
   const totalAccountsCreated = users?.reduce((s, u) => s + (u.total_accounts_created ?? 0), 0) ?? 0
-  const totalRevenue = allJobs?.reduce((s, j) => s + (j.credits_charged ?? 0), 0) ?? 0
+  const totalRevenue = allJobs?.reduce((s, j) => s + (j.completed_count ?? 0), 0) ?? 0
   const activeJobs = allJobs?.filter(j => j.status === 'processing' || j.status === 'queued').length ?? 0
   const recentJobs = allJobs?.slice(0, 8) ?? []
   const recentUsers = users?.slice(0, 5) ?? []
@@ -133,7 +133,7 @@ export default async function AdminDashboardPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <tbody>
               {recentJobs.map(job => {
-                const pct = job.total_accounts ? (job.completed_accounts / job.total_accounts) * 100 : 0
+                const pct = job.total_accounts ? (job.completed_count / job.total_accounts) * 100 : 0
                 return (
                   <tr key={job.id} style={{ borderBottom: '1px solid rgba(0,229,200,0.04)' }}>
                     <td style={{ padding: '10px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'rgba(224,224,224,0.45)' }}>
@@ -148,7 +148,7 @@ export default async function AdminDashboardPage() {
                       </div>
                     </td>
                     <td style={{ padding: '10px 16px', fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: '#00e5c8' }}>
-                      {job.credits_charged}cr
+                      {job.completed_count}cr
                     </td>
                   </tr>
                 )
