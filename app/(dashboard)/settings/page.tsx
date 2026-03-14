@@ -4,15 +4,17 @@ import { createClient } from '@/lib/supabase/client'
 import { AlertTriangle, CheckCircle2, ExternalLink, Key, MessageCircle, Monitor, Shield, Zap } from 'lucide-react'
 
 export default function SettingsPage() {
-  const [geelarkKey, setGeelarkKey] = useState('')
-  const [saved, setSaved] = useState(false)
+  const [geelarkKey, setGeelarkKey]     = useState('')
+  const [geelarkAppId, setGeelarkAppId] = useState('')
+  const [saved, setSaved]   = useState(false)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError]   = useState('')
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.from('user_settings').select('geelark_api_key').single().then(({ data }) => {
+    supabase.from('user_settings').select('geelark_api_key, geelark_app_id').single().then(({ data }) => {
       if (data?.geelark_api_key) setGeelarkKey(data.geelark_api_key)
+      if (data?.geelark_app_id)  setGeelarkAppId(data.geelark_app_id)
     })
   }, [])
 
@@ -24,7 +26,7 @@ export default function SettingsPage() {
     if (!user) return
     const { error } = await supabase
       .from('user_settings')
-      .update({ geelark_api_key: geelarkKey.trim() })
+      .update({ geelark_api_key: geelarkKey.trim(), geelark_app_id: geelarkAppId.trim() })
       .eq('user_id', user.id)
     setLoading(false)
     if (error) { setError(error.message) } else { setSaved(true); setTimeout(() => setSaved(false), 3000) }
@@ -142,7 +144,7 @@ export default function SettingsPage() {
           {/* How to get key — step by step */}
           <div style={{ marginBottom: '1.5rem' }}>
             <div style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'rgba(0,212,255,0.5)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 8 }}>
-              How to get your API key
+              How to get your credentials
             </div>
             <div style={{
               padding: '14px 16px', borderRadius: 10,
@@ -155,8 +157,9 @@ export default function SettingsPage() {
                 { step: '02', label: 'Open your account menu', desc: 'Click your avatar or account name in the top-right corner' },
                 { step: '03', label: 'Navigate to Settings', desc: 'Select "Settings" from the dropdown menu' },
                 { step: '04', label: 'Click "Open API"', desc: 'Find the "Open API" tab in the Settings sidebar' },
-                { step: '05', label: 'Generate or copy your token', desc: 'Click "Generate Token" if you don\'t have one, then copy it to clipboard' },
-                { step: '06', label: 'Paste below and save', desc: 'Paste the token in the field below and click Save Settings' },
+                { step: '05', label: 'Copy your App ID', desc: 'Your App ID is shown at the top of the Open API page — copy it to the App ID field below' },
+                { step: '06', label: 'Generate or copy your API Key', desc: 'Click "Generate" if you don\'t have one, then copy the API Key to the field below' },
+                { step: '07', label: 'Save both fields', desc: 'Paste both values below and click Save Settings' },
               ].map((s, i, arr) => (
                 <div key={s.step} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', paddingBottom: i < arr.length - 1 ? 12 : 0, marginBottom: i < arr.length - 1 ? 12 : 0, borderBottom: i < arr.length - 1 ? '1px solid rgba(0,212,255,0.06)' : 'none' }}>
                   <div style={{
@@ -217,12 +220,36 @@ export default function SettingsPage() {
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
               <CheckCircle2 size={13} />
-              API key saved — automation is ready to launch
+              Credentials saved — automation is ready to launch
             </div>
           )}
 
           {/* Input + save */}
           <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div>
+              <label style={{
+                display: 'block', marginBottom: 8,
+                fontSize: 9, fontFamily: '"JetBrains Mono", monospace',
+                color: 'rgba(0,229,200,0.5)', letterSpacing: '0.18em', textTransform: 'uppercase',
+              }}>
+                Geelark App ID
+              </label>
+              <input
+                type="text"
+                value={geelarkAppId}
+                onChange={e => setGeelarkAppId(e.target.value)}
+                placeholder="Your Geelark App ID"
+                autoComplete="off"
+                spellCheck={false}
+                className="matrix-input"
+              />
+              {geelarkAppId && (
+                <div style={{ marginTop: 6, fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.5)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <CheckCircle2 size={9} />
+                  App ID entered
+                </div>
+              )}
+            </div>
             <div>
               <label style={{
                 display: 'block', marginBottom: 8,
@@ -235,7 +262,7 @@ export default function SettingsPage() {
                 type="password"
                 value={geelarkKey}
                 onChange={e => setGeelarkKey(e.target.value)}
-                placeholder="Paste your Geelark API token here"
+                placeholder="Your Geelark API Key"
                 autoComplete="off"
                 spellCheck={false}
                 className="matrix-input"
@@ -243,15 +270,15 @@ export default function SettingsPage() {
               {geelarkKey && (
                 <div style={{ marginTop: 6, fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: 'rgba(0,229,200,0.5)', display: 'flex', alignItems: 'center', gap: 5 }}>
                   <CheckCircle2 size={9} />
-                  Key entered · click Save to apply
+                  API Key entered
                 </div>
               )}
             </div>
             <button
               type="submit"
-              disabled={loading || !geelarkKey.trim()}
+              disabled={loading || !geelarkKey.trim() || !geelarkAppId.trim()}
               className="btn-matrix-solid"
-              style={{ borderRadius: 8, padding: '11px 24px', fontSize: 11, letterSpacing: '0.1em', alignSelf: 'flex-start', opacity: !geelarkKey.trim() ? 0.4 : 1 }}
+              style={{ borderRadius: 8, padding: '11px 24px', fontSize: 11, letterSpacing: '0.1em', alignSelf: 'flex-start', opacity: (!geelarkKey.trim() || !geelarkAppId.trim()) ? 0.4 : 1 }}
             >
               {loading ? 'Saving…' : 'Save Settings'}
             </button>
